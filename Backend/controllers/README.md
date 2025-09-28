@@ -1,15 +1,7 @@
 # Controllers (Vezérlők)
 
-## Mi ez és mit csinál?
 
-A **Controller** olyan, mint egy projekt manager vagy koordinátor. Nem ő végzi el a tényleges munkát, hanem megmondja, hogy mit kell csinálni és koordinálja a folyamatokat.
-
-### Hasonlat:
-Mint egy étteremben a **főpincér**:
-- A pincér (router) hozza a rendelést
-- A főpincér (controller) megnézi mit kell csinálni
-- Utasítja a szakácsot (service), hogy készítse el
-- Visszaviszi az ételt a pincérnek
+A **Controller** koordinálja a folyamatokat.
 
 ## Fájlok:
 
@@ -23,19 +15,10 @@ controllers/
 └── recommendation.controller.js # Intelligens film ajánló algoritmus
 ```
 
-## UserController - mit csinál pontosan?
-
-### Konstruktor:
-```javascript
-constructor(User) {
-  this.userService = new UserService(User); // "Felveszi" a szakácsot
-}
-```
 
 ### Metódusok:
 
 #### 1. login(username, password)
-**Mit csinál:**
 - Meghívja a UserService login metódusát
 - Visszaadja az eredményt
 
@@ -45,7 +28,6 @@ async login(username, password) {
 }
 ```
 
-**Hogy kapcsolódik:**
 1. **Router** meghívja: `userController.login("john", "pass123")`
 2. **Controller** továbbítja: `userService.login("john", "pass123")`
 3. **Service** elvégzi a munkát (adatbázis, jelszó ellenőrzés)
@@ -53,7 +35,6 @@ async login(username, password) {
 5. **Router** elküldi a frontend-nek
 
 #### 2. register(userData)
-**Mit csinál:**
 - Új felhasználó regisztrációját koordinálja
 
 ```javascript
@@ -73,7 +54,6 @@ async register(userData) {
 ```
 
 #### 3. forgotPassword(email, emailTemplate)
-**Mit csinál:**
 - Jelszó-visszaállítási folyamatot indít el
 
 ```javascript
@@ -82,14 +62,13 @@ async forgotPassword(email, emailTemplate) {
 }
 ```
 
-**Mi történik a háttérben:**
+**A háttérben:**
 1. Service megkeresi a felhasználót email alapján
 2. Generál egy titkos tokent
 3. Elmenti a tokenbe az adatbázisba
 4. Email helper-rel küld emailt a tokennel
 
 #### 4. resetPassword(token, newPassword)
-**Mit csinál:**
 - Új jelszót állít be token alapján
 
 ```javascript
@@ -121,7 +100,7 @@ async resetPassword(token, newPassword) {
 }
 ```
 
-### Hibakódok magyarázata:
+### Hibakódok:
 
 - **INVALID_CREDENTIALS** - Rossz felhasználónév vagy jelszó
 - **USERNAME_TAKEN** - A felhasználónév már foglalt
@@ -130,25 +109,11 @@ async resetPassword(token, newPassword) {
 - **INVALID_TOKEN** - Érvénytelen visszaállítási token
 - **TOKEN_EXPIRED** - Lejárt visszaállítási token
 
-## Miért van szükség Controller-re?
-
-### 1. **Elválasztja a felelősségeket:**
+### Felelősségek:**
 - **Router:** csak HTTP kérések kezelése
 - **Controller:** koordináció, flow control
 - **Service:** tényleges üzleti logika
 
-### 2. **Könnyű tesztelni:**
-```javascript
-// Tesztelés:
-const controller = new UserController(mockUser);
-const result = await controller.login("test", "pass");
-// Nem kell HTTP kérést küldeni!
-```
-
-### 3. **Rugalmas:**
-Ha változik az üzleti logika, csak a Service-t kell módosítani, a Controller ugyanaz marad.
-
-## Hogyan kapcsolódik az egész?
 
 ### Példa - bejelentkezés folyamata:
 
@@ -165,7 +130,6 @@ Ha változik az üzleti logika, csak a Service-t kell módosítani, a Controller
 10. Frontend ← { success: true, message: "Sikeres bejelentkezés", user: {...} }
 ```
 
-Minden réteg csak a saját feladatát végzi, így tiszta és karbantartható a kód!
 
 ## Kommunikációs Folyamat
 ```
@@ -173,11 +137,6 @@ HTTP Útvonal → Vezérlő Metódus → Adatbázis Modell
      ↓              ↓                ↓
 Útvonal Kezelő → Üzleti Logika → Adat Perzisztencia
 ```
-
-## UserController Osztály
-
-### Konstruktor
-- `constructor(User)` - Fogadja a User modell példányt adatbázis műveletekhez
 
 ### Metódusok
 
@@ -212,12 +171,6 @@ A vezérlők szabványosított hiba objektumokat adnak vissza:
 Sikeres válaszok tartalmazzák:
 - `success: true`
 - `user: object` (tisztított felhasználói adatok amikor alkalmazható)
-
-## Biztonsági Megfontolások
-- Jelszó titkosítás biztonsági segédek által kezelve
-- Token generálás és validálás visszaállítási segédekre delegálva
-- Email felsorolás megelőzése az elfelejtett jelszó folyamatban
-- Bemenet tisztítás az útvonal rétegből várható
 
 ## PreferencesController Osztály
 
@@ -456,3 +409,4 @@ Sikeres válaszok tartalmazzák:
 - Weighted scoring system för relevance
 - Pagination aware result limiting
 - Cache-first strategy implementáció
+
