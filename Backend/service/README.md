@@ -1,9 +1,5 @@
 # Service (Szolgáltatások)
 
-## Mi ez és mit csinál?
-
-A **Service** réteg a tényleges munkát végzi. Ez olyan, mint egy szakács a konyhában - a router (pincér) felveszi a rendelést, a controller (főpincér) koordinálja, de a service (szakács) készíti el az ételt.
-
 ## Mappa struktúra:
 
 ```
@@ -52,23 +48,8 @@ async function bejelentkezes(username) {
 }
 ```
 
-### Mit jelent az "await"?
 
-```javascript
-async function pelda() {
-  console.log("1. Kezdés");
-  
-  // "Várd meg, amíg ez kész, de közben más dolgokat is csinálhatsz"
-  const eredmeny = await lassuMuskodesAdatbazis(); 
-  
-  console.log("2. Kész az adatbázis:", eredmeny);
-  console.log("3. Folytatjuk");
-}
-```
-
-**Fontos:** Az await **NEM blokkolja** a teljes szervert, csak megvárja az eredményt.
-
-## Business Layer - mi történik pontosan?
+## Business Layer
 
 ### UserService példa - bejelentkezés:
 
@@ -102,7 +83,6 @@ async login(username, password) {
 }
 ```
 
-**Hogy függ össze:**
 - **Controller** meghívja: `userController.login(username, password)`
 - **UserService** elvégzi a munkát
 - **Security helper**-t használja jelszó ellenőrzéshez
@@ -477,16 +457,3 @@ const token = generateRecoveryToken();
 const hashedToken = await hashRecoveryToken(token);
 ```
 
-## Biztonsági Megfontolások
-- Minden kriptográfiai művelet iparági szabványos könyvtárakat használ
-- Biztonságos véletlenszerű generálás tokenekhez
-- Konstans idejű összehasonlítások timing támadások megelőzésére
-- Nincs érzékeny adat naplózva production-ben
-- Email tartalom tisztítás fejlesztői módban
-
-## Hibakezelés
-A segédek strukturált hiba információt adnak vissza:
-- Siker/hiba státusz
-- Hiba leírások hibakereséshez
-- Nincs érzékeny információ kitettség
-- Kecses degradáció hiba esetekben
