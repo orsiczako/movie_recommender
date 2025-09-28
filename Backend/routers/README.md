@@ -1,49 +1,12 @@
 # Routers (Útvonalak)
 
-## Mi ez és mit csinál?
 
-A **Router** olyan, mint egy telefon központ vagy recepciós. Amikor valaki hív (HTTP kérés érkezik), a router eldönti, hogy melyik osztályra (controller) kell átkapcsolni a hívást.
-
-### Egyszerű példa:
-```javascript
-// Ha valaki a /api/users/login címre küld kérést:
-router.post('/login', (req, res) => {
-  // Ez fog lefutni és meghívja a user controller-t
-});
-```
-
-## Mit csinál pontosan a router?
+## A router:
 
 1. **Figyeli a bejövő kéréseket** (GET, POST, PUT, DELETE)
 2. **Ellenőrzi az útvonalat** (`/login`, `/register`, stb.)
 3. **Meghívja a megfelelő controller-t**
 4. **Visszaküldi a választ** a felhasználónak
-
-## Async/Await magyarázat:
-
-### Mi az és miért kell?
-
-Ha például adatokat akarunk lekérni az adatbázisból, az **időbe telik**. A gép nem tud megvárni, mert közben más dolgokat is csinálnia kell.
-
-```javascript
-// ROSSZ - szinkron (blokkoló):
-function bejelentkezes(username, password) {
-  const user = getUser(username); // Itt megáll minden 2-3 másodpercre!
-  if (user.password === password) {
-    return "Sikeres bejelentkezés";
-  }
-}
-
-// JÓ - aszinkron (nem blokkoló):
-async function bejelentkezes(username, password) {
-  const user = await getUser(username); // Megvárja, de nem blokkolja a szervert
-  if (user.password === password) {
-    return "Sikeres bejelentkezés";
-  }
-}
-```
-
-### Hogyan működik?
 
 - **async**: Megjelöli a függvényt, hogy várnia kell dolgokra
 - **await**: "Várj meg, amíg ez befejeződik, de közben mást is csinálhatsz"
@@ -73,7 +36,7 @@ routers/
         └── index.js     # Beállítások (/language)
 ```
 
-## Hogyan függ össze minden?
+## Összefüggések:
 
 1. **index.js** (fő router) fogadja a kérést
 2. Ha `/api/`-val kezdődik → **api/index.js**-nek adja át
@@ -228,8 +191,4 @@ Szabványosított JSON válasz struktúra:
 }
 ```
 
-## Biztonsági Megfontolások
-- Bemenet validálás útvonal szinten
-- Locale felismerés nemzetköziesítéshez
-- Nincs érzékeny adat a hiba válaszokban
-- Konzisztens válasz időzítés biztonsági végpontokhoz
+
