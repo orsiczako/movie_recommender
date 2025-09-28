@@ -1,16 +1,5 @@
 # DBO (Database Objects) - Adatbázis réteg
 
-## Mi ez és mit csinál?
-
-A **DBO** (Database Objects) olyan, mint egy **tolmács** a kód és az adatbázis között. Ahelyett, hogy SQL-t írna a programozó, egyszerű JavaScript-et használhat.
-
-### Hasonlat:
-Mint egy **fordító** egy idegen országban:
-- Te beszélsz magyarul (JavaScript)
-- A fordító (Sequelize ORM) lefordítja angolra (SQL)
-- Az angol ember (MySQL adatbázis) megérti és válaszol
-- A fordító visszafordítja neked magyarúl
-
 ## Mappa struktúra:
 
 ```
@@ -21,28 +10,6 @@ dbo/
 └── settings/
     └── index.js         # Settings "tábla" definíciója
 ```
-
-## Mi az az ORM és Sequelize?
-
-### ORM = Object-Relational Mapping
-
-**Régi módszer (SQL írás):**
-```sql
-SELECT * FROM account WHERE login_name = 'john_doe';
-INSERT INTO account (login_name, email_address) VALUES ('jane', 'jane@mail.com');
-```
-
-**Modern módszer (JavaScript objektumok):**
-```javascript
-const user = await User.findOne({ where: { login_name: 'john_doe' } });
-const newUser = await User.create({ login_name: 'jane', email_address: 'jane@mail.com' });
-```
-
-### Miért jobb?
-- **Típusbiztos:** A JavaScript tudja, milyen mezők vannak
-- **Olvashatóbb:** Mint a normál kód
-- **Kevesebb hiba:** Nem kell SQL-t írni
-- **Automatikus:** Kezeli a kapcsolatokat, validációt, stb.
 
 ## User Model részletesen:
 
@@ -293,3 +260,4 @@ Adatbázis szinkronizáció automatikusan kezelve:
 - `alter: true` - Meglévő táblákat módosítja a modell definícióknak megfelelően
 - Logging engedélyezve fejlesztői hibakereséshez
 - Hibakezelés kapcsolat hibákhoz
+
