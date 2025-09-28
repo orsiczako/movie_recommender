@@ -61,6 +61,7 @@ This project is a full-stack movie recommendation system that allows users to di
 4. **Access the Application**
    - Backend API: http://localhost:3000
    - Frontend Interface: http://localhost:3001
+   (We could actually which to HTPPS with self certificates, it's not a big deal to switch, however it is more secure but whatever)
 
 ## Project Structure
 
@@ -89,3 +90,4 @@ The application follows modern web development practices with:
 ## License
 
 Educational project developed for learning purposes.
+
