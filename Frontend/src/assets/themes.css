@@ -1,0 +1,117 @@
+
+
+:root {
+  --brand-red: #e50914;
+  --brand-red-hover: #d40813;
+  --brand-red-light: #fef2f2;
+  --brand-yellow: #f5c518;
+  --brand-green: #46d369;
+  --brand-blue: #00d4ff;
+  
+  --gray-50: #f8f9fa;
+  --gray-100: #f1f3f4;
+  --gray-200: #e8eaed;
+  --gray-300: #dadce0;
+  --gray-400: #bdc1c6;
+  --gray-500: #9aa0a6;
+  --gray-600: #5f6368;
+  --gray-700: #202124;
+  --gray-800: #171717;
+  --gray-900: #141414;
+}
+
+/* Light theme */
+.theme-light,
+:root {
+  --bg-primary: #f6f7f8;
+  --bg-secondary: #eeeff1;
+  --bg-tertiary: #e4e6e8;
+  --bg-accent: #fef5f5;
+  
+  --text-primary: #2d3436;
+  --text-secondary: #636e72;
+  --text-muted: #8e9aaf;
+  
+  --border-primary: #d1d5db;
+  --border-secondary: #e5e7eb;
+  
+  --primary: var(--brand-red);
+  --primary-hover: var(--brand-red-hover);
+  
+  --card-bg: rgba(246, 247, 248, 0.95);
+  --card-border: rgba(209, 213, 219, 0.6);
+  
+  --header-bg: rgba(246, 247, 248, 0.96);
+  --sidebar-bg: rgba(246, 247, 248, 0.98);
+}
+
+/* Dark theme */
+.theme-dark {
+  --bg-primary: var(--gray-900);
+  --bg-secondary: #1f1f1f;
+  --bg-tertiary: #2a2a2a;
+  --bg-accent: #333333;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #999999;
+  
+  --border-primary: #333333;
+  --border-secondary: #444444;
+  
+  --primary: var(--brand-red);
+  --primary-hover: #f87171;
+  
+  --card-bg: rgba(31, 31, 31, 0.95);
+  --card-border: rgba(229, 9, 20, 0.2);
+  
+  --header-bg: rgba(20, 20, 20, 0.98);
+  --sidebar-bg: rgba(20, 20, 20, 0.98);
+}
+
+/* Common properties for both themes */
+:root,
+.theme-light,
+.theme-dark {
+  --border-accent: var(--brand-red);
+  --overlay-bg: rgba(0, 0, 0, 0.6);
+  
+  /* Input styles */
+  --input-bg: var(--bg-primary);
+  --input-border: var(--border-primary);
+  --input-focus-border: var(--primary);
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 15px 35px rgba(0, 0, 0, 0.2);
+  
+  --card-shadow: var(--shadow-md);
+  --card-hover-shadow: 0 8px 25px rgba(229, 9, 20, 0.12);
+  
+  /* Semantic colors */
+  --success: var(--brand-green);
+  --warning: var(--brand-yellow);
+  --error: var(--brand-red);
+  --info: var(--brand-blue);
+  
+  /* Spacing system */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Border radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
