@@ -558,7 +558,7 @@ export default {
 
       // API hívás a backend-nek
       try {
-        const userId = user.value?.id;
+        const userId = user.value?.id || 3; // Fallback to test user
         const movieId = movie.tmdb_id || movie.id;
         
         if (userId && movieId) {
@@ -1739,3 +1739,4 @@ export default {
   }
 }
 </style>
+
