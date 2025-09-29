@@ -313,7 +313,13 @@ export default {
         // Update original for change detection
         originalPreferences.value = { ...preferences };
         
-        showMessage('Preferences saved successfully!', 'success');
+        showMessage('Preferences saved successfully! Redirecting to movies...', 'success');
+        
+        // Navigate back to movie browsing to refresh with new preferences
+        setTimeout(() => {
+          router.push('/movies');
+        }, 1500); // Show success message before redirect
+        
         
       } catch (error) {
         showMessage('Failed to save preferences', 'error');
@@ -851,3 +857,4 @@ export default {
   }
 }
 </style>
+
