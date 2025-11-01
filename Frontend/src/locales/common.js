@@ -17,7 +17,7 @@ export default {
       dark: 'Sötét'
     },
     footer: {
-      copyright: '© {year} {name} tulajdona',
+      copyright: '© {year} Nem tudom kinek a tulajdona',
       version: 'v'
     },
     theme: {
@@ -44,7 +44,7 @@ export default {
       dark: 'Dark'
     },
     footer: {
-      copyright: '© {year} Property of {name}',
+      copyright: '© {year} I don\'t know whose property this is',
       version: 'v'
     },
     theme: {
