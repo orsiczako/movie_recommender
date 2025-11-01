@@ -1,10 +1,12 @@
 import { authService } from './api.js'
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+
 class SettingsService {
   async getSettings() {
     try {
       const token = localStorage.getItem('authToken')
-      const response = await fetch('http://localhost:3000/api/settings', {
+      const response = await fetch(`${API_BASE_URL}/api/settings`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -35,7 +37,7 @@ class SettingsService {
       console.log('Updating settings:', settings)
       console.log('Using token:', token ? 'Present' : 'Missing')
       
-      const response = await fetch('http://localhost:3000/api/settings', {
+      const response = await fetch(`${API_BASE_URL}/api/settings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
