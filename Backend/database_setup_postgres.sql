@@ -83,7 +83,10 @@ CREATE TABLE IF NOT EXISTS user_watchlist (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     movie_id INTEGER NOT NULL,
+    watched SMALLINT NOT NULL DEFAULT 0,
+    user_rating DECIMAL(3,1) DEFAULT NULL,
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    watched_at TIMESTAMP DEFAULT NULL,
     FOREIGN KEY (user_id) REFERENCES account(account_id) ON DELETE CASCADE,
     FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
     UNIQUE(user_id, movie_id)
@@ -107,4 +110,6 @@ CREATE INDEX IF NOT EXISTS idx_movies_tmdb_rating ON movies(tmdb_rating);
 CREATE INDEX IF NOT EXISTS idx_user_interactions_user_id ON user_movie_interactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_interactions_movie_id ON user_movie_interactions(movie_id);
 CREATE INDEX IF NOT EXISTS idx_watchlist_user_id ON user_watchlist(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_watchlist ON user_watchlist(user_id, watched);
+CREATE INDEX IF NOT EXISTS idx_added_date ON user_watchlist(added_at);
 CREATE INDEX IF NOT EXISTS idx_preferences_user_id ON user_preferences(user_id);
