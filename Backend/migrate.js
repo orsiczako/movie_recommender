@@ -114,32 +114,45 @@ async function runMigration() {
  */
 function convertMySQLToPostgreSQL(sql) {
   return sql
+    // Remove MySQL-specific database creation and USE statements
+    .replace(/CREATE DATABASE IF NOT EXISTS.*?;/gi, '')
+    .replace(/USE.*?;/gi, '')
+    
     // Convert AUTO_INCREMENT to SERIAL
+    .replace(/INT\(\d+\)\s+(?:UNSIGNED\s+)?NOT NULL AUTO_INCREMENT/gi, 'SERIAL')
+    .replace(/INT\s+NOT NULL AUTO_INCREMENT/gi, 'SERIAL')
+    .replace(/BIGINT\s+(?:UNSIGNED\s+)?NOT NULL AUTO_INCREMENT/gi, 'BIGSERIAL')
     .replace(/AUTO_INCREMENT/gi, '')
-    .replace(/INT\s+PRIMARY KEY/gi, 'SERIAL PRIMARY KEY')
-    .replace(/BIGINT\s+PRIMARY KEY/gi, 'BIGSERIAL PRIMARY KEY')
     
     // Convert MySQL data types to PostgreSQL
+    .replace(/INT\(\d+\)(\s+UNSIGNED)?/gi, 'INTEGER')
     .replace(/TINYINT\(1\)/gi, 'BOOLEAN')
     .replace(/TINYINT/gi, 'SMALLINT')
     .replace(/LONGTEXT/gi, 'TEXT')
     .replace(/DATETIME/gi, 'TIMESTAMP')
     .replace(/DOUBLE/gi, 'DOUBLE PRECISION')
+    .replace(/DECIMAL\((\d+),(\d+)\)/gi, 'DECIMAL($1,$2)')
     
-    // Convert backticks to double quotes
+    // Convert backticks to double quotes for identifiers
     .replace(/`([^`]+)`/g, '"$1"')
     
-    // Convert ENGINE and CHARSET clauses (remove them for PostgreSQL)
+    // Convert MySQL table options (remove them for PostgreSQL)
     .replace(/ENGINE=\w+/gi, '')
+    .replace(/AUTO_INCREMENT=\d+/gi, '')
     .replace(/DEFAULT CHARSET=\w+/gi, '')
     .replace(/COLLATE=\w+/gi, '')
     
-    // Handle IF NOT EXISTS
-    .replace(/CREATE TABLE IF NOT EXISTS/gi, 'CREATE TABLE IF NOT EXISTS')
+    // Handle UNIQUE KEY constraints - convert to PostgreSQL syntax
+    .replace(/UNIQUE KEY `([^`]+)`\s*\(`([^`]+)`\)/gi, 'UNIQUE ("$2")')
+    .replace(/KEY `([^`]+)`\s*\(`([^`]+)`\)/gi, '') // Remove regular KEY constraints
+    
+    // Handle ON UPDATE CURRENT_TIMESTAMP
+    .replace(/DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP/gi, 'DEFAULT CURRENT_TIMESTAMP')
     
     // Clean up extra commas and whitespace
-    .replace(/,\s*\)/g, ')')
+    .replace(/,(\s*\))/g, '$1')
     .replace(/\s+/g, ' ')
+    .replace(/,\s*,/g, ',')
     .trim();
 }
 
