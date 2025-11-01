@@ -67,7 +67,7 @@ async function runMigration() {
     
     sqlContent = fs.readFileSync(sqlPath, 'utf8');
 
-    console.log(`Loaded ${path.basename(sqlPath)}`);
+    console.log(`Using database file: ${path.basename(sqlPath)}`);
 
     // Convert MySQL syntax to PostgreSQL if needed (only for MySQL files)
     if (dbType === 'postgres' && sqlPath.includes('database_setup.sql')) {
