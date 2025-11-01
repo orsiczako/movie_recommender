@@ -68,10 +68,6 @@ module.exports = (sequelize) => {
         name: 'unique_user_watchlist'
       },
       {
-        fields: ['user_id', 'watched'],
-        name: 'idx_user_watchlist'
-      },
-      {
         fields: ['added_at'],
         name: 'idx_added_date'
       }
