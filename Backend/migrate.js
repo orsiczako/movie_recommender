@@ -56,16 +56,24 @@ async function runMigration() {
     
     console.log('Database connection established');
 
-    // Read the SQL setup file
-    const sqlPath = path.join(__dirname, '..', 'database_setup.sql');
-    let sqlContent = fs.readFileSync(sqlPath, 'utf8');
-
-    // Convert MySQL syntax to PostgreSQL if needed
+    // Read the appropriate SQL setup file
+    let sqlPath, sqlContent;
+    
     if (dbType === 'postgres') {
-      sqlContent = convertMySQLToPostgreSQL(sqlContent);
+      sqlPath = path.join(__dirname, 'database_setup_postgres.sql');
+    } else {
+      sqlPath = path.join(__dirname, '..', 'database_setup.sql');
     }
+    
+    sqlContent = fs.readFileSync(sqlPath, 'utf8');
 
-    console.log('Loaded and processed database_setup.sql');
+    console.log(`Loaded ${path.basename(sqlPath)}`);
+
+    // Convert MySQL syntax to PostgreSQL if needed (only for MySQL files)
+    if (dbType === 'postgres' && sqlPath.includes('database_setup.sql')) {
+      sqlContent = convertMySQLToPostgreSQL(sqlContent);
+      console.log('Converted MySQL syntax to PostgreSQL');
+    }
 
     // Execute the SQL commands
     if (dbType === 'postgres') {
