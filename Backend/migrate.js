@@ -77,26 +77,11 @@ async function runMigration() {
 
     // Execute the SQL commands
     if (dbType === 'postgres') {
-      // Split SQL statements and execute them one by one for PostgreSQL
-      const statements = sqlContent
-        .split(';')
-        .map(stmt => stmt.trim())
-        .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
-      
-      console.log(`Executing ${statements.length} SQL statements...`);
-      
-      for (let i = 0; i < statements.length; i++) {
-        const statement = statements[i];
-        if (statement) {
-          try {
-            await connection.query(statement);
-            console.log(`Statement ${i + 1}/${statements.length} executed successfully`);
-          } catch (error) {
-            console.error(`Failed to execute statement ${i + 1}: ${statement.substring(0, 100)}...`);
-            throw error;
-          }
-        }
-      }
+      // For PostgreSQL, execute the entire SQL content as one block
+      // since our SQL file is well-structured with proper statement separation
+      console.log('Executing PostgreSQL schema creation...');
+      await connection.query(sqlContent);
+      console.log('PostgreSQL schema created successfully');
     } else {
       await connection.execute(sqlContent);
     }
