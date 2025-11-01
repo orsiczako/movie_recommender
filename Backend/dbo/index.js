@@ -1,17 +1,30 @@
 require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
+// Database configuration with support for multiple dialects
+const dbConfig = {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT || (process.env.DB_TYPE === 'postgres' ? 5432 : 3306),
+  dialect: process.env.DB_TYPE || 'mysql',
+  logging: process.env.NODE_ENV === 'production' ? false : console.log,
+};
+
+// PostgreSQL specific SSL configuration for production
+if (process.env.DB_TYPE === 'postgres' && process.env.NODE_ENV === 'production') {
+  dbConfig.dialectOptions = {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
+  };
+}
+
 // DB kapcsolat létrehozása
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
-  process.env.DB_PASS,
-  {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    dialect: 'mysql',
-    logging: console.log, // bekapcsoljuk hogy lássuk mit csinál
-  }
+  process.env.DB_PASS || process.env.DB_PASSWORD,
+  dbConfig
 );
 
 // Modellek importálása - explicit index.js hivatkozással

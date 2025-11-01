@@ -1,0 +1,53 @@
+services:
+  - type: web
+    name: movie-recommender-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_TYPE
+        value: postgres
+      - key: DB_HOST
+        fromDatabase:
+          name: movie-recommender-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: movie-recommender-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: movie-recommender-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: movie-recommender-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: movie-recommender-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TMDB_API_KEY
+        sync: false  # Manual beállítás szükséges
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USER
+        sync: false  # Manual beállítás szükséges
+      - key: EMAIL_PASS
+        sync: false  # Manual beállítás szükséges
+
+databases:
+  - name: movie-recommender-db
+    databaseName: movie_recommender
+    user: movie_user
+    plan: free
