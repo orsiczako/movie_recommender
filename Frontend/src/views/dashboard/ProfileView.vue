@@ -11,7 +11,7 @@
           <div class="avatar-wrapper">
             <img :src="userProfile.avatar" :alt="$t('profile.avatar')" class="profile-avatar">
             <button @click="changeAvatar" class="avatar-edit-btn">
-              <i class="icon-camera"></i>
+              Szerkesztés
             </button>
           </div>
           <div class="profile-info">
@@ -27,7 +27,6 @@
           <!-- Személyes adatok -->
           <div class="settings-section card">
             <h3 class="section-title">
-              <i class="icon-user"></i>
               {{ $t('profile.personal_info') }}
             </h3>
             <form @submit.prevent="savePersonalInfo" class="settings-form">
@@ -81,7 +80,6 @@
                 ></textarea>
               </div>
               <button type="submit" class="btn btn-primary">
-                <i class="icon-save"></i>
                 {{ $t('profile.save_changes') }}
               </button>
             </form>
@@ -90,7 +88,6 @@
           <!-- Jelszó módosítás -->
           <div class="settings-section card">
             <h3 class="section-title">
-              <i class="icon-lock"></i>
               {{ $t('profile.security') }}
             </h3>
             <form @submit.prevent="changePassword" class="settings-form">
@@ -125,7 +122,6 @@
                 >
               </div>
               <button type="submit" class="btn btn-primary">
-                <i class="icon-shield"></i>
                 {{ $t('profile.change_password') }}
               </button>
             </form>
@@ -134,12 +130,10 @@
           <!-- Fiók műveletek -->
           <div class="settings-section card danger-section">
             <h3 class="section-title">
-              <i class="icon-warning"></i>
               {{ $t('profile.account_actions') }}
             </h3>
             <div class="danger-actions">
               <button @click="confirmDeleteAccount" class="btn btn-danger">
-                <i class="icon-delete"></i>
                 {{ $t('profile.delete_account') }}
               </button>
             </div>
@@ -393,15 +387,6 @@ export default {
   margin: 0 auto;
 }
 
-/* Icons */
-.icon-camera::before { content: "■"; }
-.icon-user::before { content: "◇"; }
-.icon-lock::before { content: "◆"; }
-.icon-save::before { content: "▲"; }
-.icon-shield::before { content: "⬟"; }
-.icon-warning::before { content: "!"; }
-.icon-delete::before { content: "×"; }
-
 /* Profile header */
 .profile-header {
   padding: 30px;
@@ -432,20 +417,17 @@ export default {
 
 .avatar-edit-btn {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  bottom: -5px;
+  right: -5px;
+  padding: 8px 12px;
+  border-radius: 8px;
   background: var(--primary);
   color: white;
   border: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 0.8rem;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .avatar-edit-btn:hover {
