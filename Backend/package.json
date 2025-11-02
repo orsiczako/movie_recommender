@@ -4,7 +4,7 @@
   "description": "Netflix-style movie recommendation backend with TMDB integration",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node migrate.js && node app.js",
     "dev": "nodemon app.js",
     "build": "echo 'No build step required for Node.js'",
     "migrate": "node migrate.js",
