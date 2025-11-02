@@ -4,18 +4,6 @@
     :show-back-button="true"
     class="favorites-page"
   >
-    <div class="refresh-section">
-      <BaseButton 
-        @click="loadFavoriteMovies" 
-        :loading="loading"
-        variant="secondary"
-        size="medium"
-        icon="refresh"
-      >
-        {{ loading ? $t('favoriteMovies.loading') : $t('favoriteMovies.refresh') }}
-      </BaseButton>
-    </div>
-
     <!-- Movies content -->
     <div class="movies-content">
       <!-- Loading state -->
@@ -369,12 +357,6 @@ export default {
 
 <style scoped>
 /* Favorites view specific styles - consistent with design system */
-.refresh-section {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 30px;
-}
-
 .movies-content {
   min-height: 60vh;
 }
