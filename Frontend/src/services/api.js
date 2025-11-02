@@ -104,6 +104,63 @@ export const authService = {
   }
 }
 
+export const userService = {
+  async getProfile() {
+    try {
+      const response = await apiClient.get('/api/user/me')
+      return { success: true, data: response.data }
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to load profile'
+      }
+    }
+  },
+
+  async updateProfile(fullName, email, bio) {
+    try {
+      const response = await apiClient.put('/api/user/profile', {
+        fullName,
+        email,
+        bio
+      })
+      return { success: true, data: response.data }
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to update profile'
+      }
+    }
+  },
+
+  async changePassword(currentPassword, newPassword) {
+    try {
+      const response = await apiClient.put('/api/user/change-password', {
+        currentPassword,
+        newPassword
+      })
+      return { success: true, data: response.data }
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to change password'
+      }
+    }
+  },
+
+  async deleteAccount() {
+    try {
+      const response = await apiClient.delete('/api/user/account')
+      return { success: true, data: response.data }
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to delete account'
+      }
+    }
+  }
+}
+
 export const settingsService = {
   async getLanguage() {
     try {

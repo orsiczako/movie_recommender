@@ -174,6 +174,7 @@
 <script>
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import { useNotification } from '@/composables/useNotification'
+import { userService } from '@/services/api'
 
 export default {
   name: 'ProfileView',
@@ -220,23 +221,10 @@ export default {
   methods: {
     async loadUserProfile() {
       try {
-        const authToken = localStorage.getItem('authToken')
+        const result = await userService.getProfile()
         
-        if (!authToken) {
-          this.$router.push('/login')
-          return
-        }
-
-        const response = await fetch('/api/user/me', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          const userData = data.user
+        if (result.success) {
+          const userData = result.data.user
           
           this.userProfile = {
             name: userData.fullName || userData.full_name || userData.name || 'Felhasználó',
@@ -250,10 +238,9 @@ export default {
           this.bioEdited = false
           this.bioSaved = false
         } else {
-          const errorData = await response.text()
-          
-          if (response.status === 401) {
-            // Unauthorized - redirect to login
+          // Handle API errors
+          if (result.message && result.message.includes('token')) {
+            // Token expired or invalid - redirect to login
             localStorage.removeItem('authToken')
             localStorage.removeItem('authUser')
             this.$router.push('/login')
@@ -263,6 +250,7 @@ export default {
           this.showErrorMessage(this.$t('profile.load_failed'))
         }
       } catch (error) {
+        console.error('Profile loading error:', error)
         this.showErrorMessage(this.$t('profile.load_failed'))
       }
     },
@@ -300,21 +288,13 @@ export default {
       }
 
       try {
-        // API hívás profil frissítéshez (username nem küldjük, mert readonly)
-        const response = await fetch('/api/user/profile', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          },
-          body: JSON.stringify({
-            fullName: this.editableProfile.name,
-            email: this.editableProfile.email,
-            bio: this.editableProfile.bio
-          })
-        })
+        const result = await userService.updateProfile(
+          this.editableProfile.name,
+          this.editableProfile.email,
+          this.editableProfile.bio
+        )
 
-        if (response.ok) {
+        if (result.success) {
           this.userProfile = { ...this.editableProfile }
           this.bioEdited = false
           this.bioSaved = true
@@ -325,10 +305,10 @@ export default {
             this.bioSaved = false
           }, 2000)
         } else {
-          const error = await response.json()
-          this.showErrorMessage(error.message || this.$t('profile.update_failed'))
+          this.showErrorMessage(result.message || this.$t('profile.update_failed'))
         }
       } catch (error) {
+        console.error('Profile update error:', error)
         this.showErrorMessage(this.$t('profile.update_failed'))
       }
     },
@@ -350,42 +330,28 @@ export default {
       }
 
       try {
-        // API hívás jelszó változtatáshoz
-        const response = await fetch('/api/user/change-password', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          },
-          body: JSON.stringify({
-            currentPassword: this.passwordForm.current,
-            newPassword: this.passwordForm.new
-          })
-        })
+        const result = await userService.changePassword(
+          this.passwordForm.current,
+          this.passwordForm.new
+        )
 
-        if (response.ok) {
+        if (result.success) {
           this.showSuccessMessage(this.$t('profile.password_updated'))
           this.passwordForm = { current: '', new: '', confirm: '' }
         } else {
-          const error = await response.json()
-          this.showErrorMessage(error.message || this.$t('profile.password_change_failed'))
+          this.showErrorMessage(result.message || this.$t('profile.password_change_failed'))
         }
       } catch (error) {
+        console.error('Password change error:', error)
         this.showErrorMessage(this.$t('profile.password_change_failed'))
       }
     },
     async confirmDeleteAccount() {
       if (confirm(this.$t('profile.delete_account_confirm'))) {
         try {
-          // API hívás fiók törléshez
-          const response = await fetch('/api/user/account', {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            }
-          })
+          const result = await userService.deleteAccount()
 
-          if (response.ok) {
+          if (result.success) {
             // Sikeres törlés után logout és átirányítás
             localStorage.removeItem('authToken')
             localStorage.removeItem('authUser')
@@ -397,8 +363,7 @@ export default {
               this.$router.push('/login')
             }, 2000)
           } else {
-            const error = await response.json()
-            this.showErrorMessage(error.message || this.$t('profile.delete_failed'))
+            this.showErrorMessage(result.message || this.$t('profile.delete_failed'))
           }
         } catch (error) {
           console.error('Account deletion error:', error)
