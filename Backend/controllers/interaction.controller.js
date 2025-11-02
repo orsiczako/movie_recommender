@@ -300,6 +300,9 @@ class InteractionController {
       const { userId } = req.params;
       const { page = 1, limit = 20, interactionType } = req.query;
 
+      console.log('Getting user interactions for userId:', userId);
+      console.log('Query params:', { page, limit, interactionType });
+
       // Szűrési feltételek
       const whereClause = { user_id: userId };
       
@@ -307,9 +310,12 @@ class InteractionController {
         whereClause.interaction_type = interactionType;
       }
 
+      console.log('Where clause:', whereClause);
+
       // Paginálás számítása
       const offset = (page - 1) * limit;
 
+      console.log('Executing findAndCountAll query...');
       const { count, rows: interactions } = await this.UserMovieInteraction.findAndCountAll({
         where: whereClause,
         include: [{
@@ -322,6 +328,8 @@ class InteractionController {
         offset: parseInt(offset)
       });
 
+      console.log('Query completed. Count:', count, 'Rows found:', interactions.length);
+
       // Kép URL-ek hozzáadása
       const processedInteractions = interactions.map(interaction => {
         const interactionData = interaction.toJSON();
@@ -330,6 +338,8 @@ class InteractionController {
         }
         return interactionData;
       });
+
+      console.log('Processed interactions:', processedInteractions.length);
 
       return ApiResponse.success(res, 'user.success.interactions_retrieved', {
         data: {
@@ -345,6 +355,11 @@ class InteractionController {
 
     } catch (error) {
       console.error('Error getting user interactions:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       return ApiResponse.serverError(res, error);
     }
   }
