@@ -109,6 +109,13 @@ export function useAuth() {
     }
   }
 
+  // Update user data
+  const updateUser = (updatedUserData) => {
+    user.value = { ...user.value, ...updatedUserData }
+    localStorage.setItem('authUser', JSON.stringify(user.value))
+    console.log('User data updated in auth state:', user.value)
+  }
+
   return {
     // State
     token: computed(() => token.value),
@@ -119,6 +126,7 @@ export function useAuth() {
     login,
     logout,
     validateToken,
-    initAuth
+    initAuth,
+    updateUser
   }
 }

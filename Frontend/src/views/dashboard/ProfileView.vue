@@ -168,6 +168,7 @@
 <script>
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import { useNotification } from '@/composables/useNotification'
+import { useAuth } from '@/composables/useAuth'
 import { userService } from '@/services/api'
 
 export default {
@@ -177,8 +178,10 @@ export default {
   },
   setup() {
     const { notify } = useNotification()
+    const { updateUser } = useAuth()
     return {
-      notify
+      notify,
+      updateUser
     }
   },
   data() {
@@ -292,6 +295,16 @@ export default {
           this.userProfile = { ...this.editableProfile }
           this.bioEdited = false
           this.bioSaved = true
+          
+          // Frissítés a globális auth state-ben is
+          this.updateUser({
+            fullName: this.editableProfile.name,
+            full_name: this.editableProfile.name,
+            name: this.editableProfile.name,
+            email: this.editableProfile.email,
+            bio: this.editableProfile.bio
+          })
+          
           this.showSuccessMessage(this.$t('profile.info_updated'))
           
           // 2 másodperc után a saved állapot eltűnik
