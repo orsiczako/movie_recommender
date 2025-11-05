@@ -197,7 +197,15 @@ export default {
     async clearFavorites() {
       try {
         this.loading = true;
-        const userId = this.authUser?.account_id || 3; // Ugyanaz mint FavoriteMoviesView-ban
+        // Use the authenticated user's ID
+        const userId = this.authUser?.id;
+        
+        if (!userId) {
+          this.notify.error('User not found. Please log in again.');
+          return;
+        }
+
+        console.log('Clearing favorites for user ID:', userId);
 
         // Call backend to clear all favorites for this user
         const result = await interactionsService.clearAllFavorites(userId);
@@ -209,6 +217,7 @@ export default {
           this.notify.error(this.$t('settings.app.clear_favorites_error'));
         }
       } catch (error) {
+        console.error('Error clearing favorites:', error);
         this.notify.error(this.$t('settings.app.clear_favorites_error'));
       } finally {
         this.loading = false;

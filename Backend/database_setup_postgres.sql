@@ -64,42 +64,15 @@ CREATE TABLE IF NOT EXISTS user_movie_interactions (
 CREATE TABLE IF NOT EXISTS user_preferences (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL UNIQUE,
-    
-    -- Genre preferences (0=dislike, 1=like, NULL=neutral)
-    genre_action SMALLINT DEFAULT NULL,
-    genre_adventure SMALLINT DEFAULT NULL,
-    genre_animation SMALLINT DEFAULT NULL,
-    genre_comedy SMALLINT DEFAULT NULL,
-    genre_crime SMALLINT DEFAULT NULL,
-    genre_documentary SMALLINT DEFAULT NULL,
-    genre_drama SMALLINT DEFAULT NULL,
-    genre_family SMALLINT DEFAULT NULL,
-    genre_fantasy SMALLINT DEFAULT NULL,
-    genre_history SMALLINT DEFAULT NULL,
-    genre_horror SMALLINT DEFAULT NULL,
-    genre_music SMALLINT DEFAULT NULL,
-    genre_mystery SMALLINT DEFAULT NULL,
-    genre_romance SMALLINT DEFAULT NULL,
-    genre_science_fiction SMALLINT DEFAULT NULL,
-    genre_thriller SMALLINT DEFAULT NULL,
-    genre_war SMALLINT DEFAULT NULL,
-    genre_western SMALLINT DEFAULT NULL,
-    genre_anime SMALLINT DEFAULT NULL,
-    
-    -- Rating and year preferences
+    preferred_genres JSONB DEFAULT NULL,
     min_rating DECIMAL(3,1) DEFAULT 0.0,
     max_rating DECIMAL(3,1) DEFAULT 10.0,
     min_year INTEGER DEFAULT 1900,
     max_year INTEGER DEFAULT 2030,
-    
-    -- Additional preferences
-    runtime_preference VARCHAR(20) DEFAULT 'any',
+    min_runtime INTEGER DEFAULT 0,
+    max_runtime INTEGER DEFAULT 300,
     preferred_languages JSONB DEFAULT NULL,
-    prefer_classic SMALLINT DEFAULT 0,
-    prefer_modern SMALLINT DEFAULT 1,
-    prefer_recent SMALLINT DEFAULT 1,
-    child_mode SMALLINT DEFAULT 0,
-    
+    exclude_adult BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES account(account_id) ON DELETE CASCADE
