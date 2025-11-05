@@ -83,6 +83,7 @@ import LanguageSwitcher from '@/components/ui/LanguageSwitcher.vue'
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher.vue'
 import AppFooter from '@/components/ui/AppFooter.vue'
 import AnimatedBackground from '@/components/ui/AnimatedBackground.vue'
+import { useAuth } from '@/composables/useAuth'
 
 export default {
   name: 'Dashboard',
@@ -92,11 +93,22 @@ export default {
     AppFooter,
     AnimatedBackground
   },
+  setup() {
+    const { user } = useAuth()
+    return {
+      user
+    }
+  },
   data() {
     return {
       sidebarOpen: false,
-      userName: 'Czakó Orsolya', // Teljes név megjelenítése
       profileImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNlNTA5MTQiLz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIxMCIgeT0iMTAiPgo8Y2lyY2xlIGN4PSIxMCIgY3k9IjciIHI9IjMiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xNiAxNmMwLTMuMzEzNy0yLjY4NjMtNi02LTZzLTYgMi42ODYzLTYgNiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cjwvc3ZnPgo=' // Piros Netflix színű avatar SVG
+    }
+  },
+  computed: {
+    userName() {
+      // A bejelentkezett user nevét jelenítjük meg
+      return this.user?.fullName || this.user?.full_name || this.user?.name || 'Felhasználó'
     }
   },
   methods: {
