@@ -8,12 +8,6 @@
       <!-- Profil header -->
       <div class="profile-header card">
         <div class="profile-avatar-section">
-          <div class="avatar-wrapper">
-            <img :src="userProfile.avatar" :alt="$t('profile.avatar')" class="profile-avatar">
-            <button @click="changeAvatar" class="avatar-edit-btn">
-              Szerkesztés
-            </button>
-          </div>
           <div class="profile-info">
             <h2 class="profile-name">{{ userProfile.name }}</h2>
             <p class="profile-email">{{ userProfile.email }}</p>
@@ -140,28 +134,6 @@
           </div>
         </div>
       </div>
-
-    <!-- Modal for avatar change -->
-    <div v-if="showAvatarModal" class="modal-overlay" @click="closeAvatarModal">
-      <div class="modal" @click.stop>
-        <h3>{{ $t('profile.change_avatar') }}</h3>
-        <div class="avatar-options">
-          <div 
-            v-for="avatar in avatarOptions" 
-            :key="avatar.id"
-            @click="selectAvatar(avatar)"
-            class="avatar-option"
-            :class="{ active: avatar.url === editableProfile.avatar }"
-          >
-            <img :src="avatar.url" :alt="avatar.name">
-          </div>
-        </div>
-        <div class="modal-actions">
-          <button @click="closeAvatarModal" class="btn btn-secondary">{{ $t('common.cancel') }}</button>
-          <button @click="saveAvatar" class="btn btn-primary">{{ $t('common.save') }}</button>
-        </div>
-      </div>
-    </div>
   </DashboardLayout>
 </template>
 
@@ -186,13 +158,11 @@ export default {
   },
   data() {
     return {
-      showAvatarModal: false,
       userProfile: {
         name: 'Betöltés...',
         email: 'Betöltés...',
         username: 'Betöltés...',
         bio: '',
-        avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjUwIiBmaWxsPSIjZDIxOTdmIi8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjAgODBjMC0xNi41Njg1IDEzLjQzMTUtMzAgMzAtMzBzMzAgMTMuNDMxNSAzMCAzMCIgZmlsbD0id2hpdGUiLz4KPC9zdmc+',
         joinedDate: '2024. január'
       },
       editableProfile: {},
@@ -202,12 +172,7 @@ export default {
         current: '',
         new: '',
         confirm: ''
-      },
-      avatarOptions: [
-        { id: 1, name: 'Default', url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjUwIiBmaWxsPSIjZDIxOTdmIi8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjAgODBjMC0xNi41Njg1IDEzLjQzMTUtMzAgMzAtMzBzMzAgMTMuNDMxNSAzMCAzMCIgZmlsbD0id2hpdGUiLz4KPC9zdmc+' },
-        { id: 2, name: 'Pink', url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjUwIiBmaWxsPSIjZjQ3MmI2Ii8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjAgODBjMC0xNi41Njg1IDEzLjQzMTUtMzAgMzAtMzBzMzAgMTMuNDMxNSAzMCAzMCIgZmlsbD0id2hpdGUiLz4KPC9zdmc+' },
-        { id: 3, name: 'Purple', url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjUwIiBmaWxsPSIjYTg1NWY3Ii8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjAgODBjMC0xNi41Njg1IDEzLjQzMTUtMzAgMzAtMzBzMzAgMTMuNDMxNSAzMCAzMCIgZmlsbD0id2hpdGUiLz4KPC9zdmc+' }
-      ]
+      }
     }
   },
   created() {
@@ -257,20 +222,6 @@ export default {
     },
     onBioFocus() {
       this.bioSaved = false
-    },
-    changeAvatar() {
-      this.showAvatarModal = true
-    },
-    closeAvatarModal() {
-      this.showAvatarModal = false
-    },
-    selectAvatar(avatar) {
-      this.editableProfile.avatar = avatar.url
-    },
-    saveAvatar() {
-      this.userProfile.avatar = this.editableProfile.avatar
-      this.closeAvatarModal()
-      this.showSuccessMessage(this.$t('profile.avatar_updated'))
     },
     async savePersonalInfo() {
       // Validáció
@@ -414,38 +365,6 @@ export default {
   display: flex;
   gap: 20px;
   align-items: center;
-}
-
-.avatar-wrapper {
-  position: relative;
-}
-
-.profile-avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 3px solid var(--primary);
-  object-fit: cover;
-}
-
-.avatar-edit-btn {
-  position: absolute;
-  bottom: -5px;
-  right: -5px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: var(--primary);
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.avatar-edit-btn:hover {
-  background: var(--primary-hover);
-  transform: scale(1.1);
 }
 
 .profile-info h2 {
@@ -692,74 +611,6 @@ input:checked + .slider:before {
   background: #dc2626;
 }
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--overlay-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-
-.modal {
-  background: var(--card-bg);
-  border-radius: 16px;
-  padding: 30px;
-  max-width: 500px;
-  width: 90%;
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-xl);
-}
-
-.modal h3 {
-  margin: 0 0 20px 0;
-  color: var(--text-primary);
-  text-align: center;
-}
-
-.avatar-options {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.avatar-option {
-  cursor: pointer;
-  border-radius: 50%;
-  padding: 5px;
-  transition: all 0.2s;
-  border: 2px solid transparent;
-}
-
-.avatar-option:hover {
-  border-color: var(--primary);
-}
-
-.avatar-option.active {
-  border-color: var(--primary);
-  background: var(--primary-light);
-}
-
-.avatar-option img {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: block;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .profile-header {
@@ -785,14 +636,6 @@ input:checked + .slider:before {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
-  }
-
-  .modal {
-    padding: 20px;
-  }
-
-  .avatar-options {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>
