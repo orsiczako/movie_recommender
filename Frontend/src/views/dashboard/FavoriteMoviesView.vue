@@ -289,22 +289,9 @@ export default {
   console.log('FavoriteMoviesView event listeners cleaned up!')
       });
       
-      // Auto-refresh minden 30 másodpercben (fallback)
-      const autoRefreshInterval = setInterval(() => {
-        if (!loading.value) {
-
-          loadFavoriteMovies();
-        }
-      }, 30000);
-      
-      onUnmounted(() => {
-        clearInterval(autoRefreshInterval);
-      });
-      
       // Visibility change refresh (amikor visszatér a user)
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'visible' && !loading.value) {
-
           setTimeout(() => loadFavoriteMovies(), 200);
         }
       };
