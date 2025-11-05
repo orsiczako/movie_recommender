@@ -145,16 +145,7 @@ export default {
 
 
         // Get favorite movies from API (higher limit to get all favorites)
-        // SZUPER AGRESSZÍV CACHE-BUSTING
-        const timestamp = Date.now();
-        const randomId = Math.random().toString(36).substring(7);
-        
-        const response = await interactionsService.getFavoriteMovies(userId, 1, 100, {
-          _t: timestamp,
-          _r: randomId,
-          _cb: `cache_bust_${timestamp}`,
-          _force: 'true'
-        });
+        const response = await interactionsService.getFavoriteMovies(userId, 1, 100);
         
         console.log('API response:', response)
         
@@ -195,20 +186,6 @@ export default {
           console.log('Translated movie data:', translatedMovies)
           favoriteMovies.value = translatedMovies
           
-          // Global cache update
-          if (!window.favoriteMoviesCache) {
-            window.favoriteMoviesCache = {
-              data: movieData,
-              timestamp: Date.now(),
-              invalidate: () => {
-                window.favoriteMoviesCache = null;
-              }
-            };
-          } else {
-            window.favoriteMoviesCache.data = movieData;
-            window.favoriteMoviesCache.timestamp = Date.now();
-          }
-          
         } else {
           // If no interactions found, show empty state
 
@@ -228,79 +205,36 @@ export default {
       }
     }
 
-    // Optimistic UI update - azonnali film hozzáadás
-    const addOptimisticMovie = (movieData) => {
-      // Ellenőrizzük hogy már nincs-e benne (duplikáció elkerülése)
-      const exists = favoriteMovies.value.some(movie => movie.id === movieData.id);
-      
-      if (!exists) {
-        favoriteMovies.value = [movieData, ...favoriteMovies.value];
-      }
-    };
-
     onMounted(() => {
       loadFavoriteMovies()
       
-      // EGYSÉGES EVENT HANDLER - elkerüljük a duplikált listener konfliktusokat
-      const handleAllFavoritesEvents = (event) => {
-        const { action, movie } = event.detail || {};
-        
-        if (action === 'LIKE_OPTIMISTIC' && movie) {
-          // 1. AZONNAL optimistic update (nincs API hívás!)
-          addOptimisticMovie(movie);
-          
-          // 2. NEM töltjük újra a listát azonnal - hagyjuk az optimistic update-et!
-          // Csak 1 másodperc múlva validáljuk háttérben (de nem írjuk felül a UI-t)
-          setTimeout(() => {
-            loadFavoriteMovies();  // Cache-refresh, UI már helyes
-          }, 1000);
-          
-        } else if (action === 'LIKE_CONFIRMED') {
-          // Backend megerősítés - csak background cache refresh
-          // UI már helyesen mutatja, csak cache-t frissítjük
-          setTimeout(() => loadFavoriteMovies(), 300);
-          
-        } else if (action === 'LIKE_ROLLBACK' && movie) {
-          // Rollback - távolítsuk el a hibás optimistic update-et
-
-          favoriteMovies.value = favoriteMovies.value.filter(m => m.id !== movie.id);
-          
-        } else {
-          // Egyéb események - standard refresh
-
-          setTimeout(() => loadFavoriteMovies(), 150);
-        }
-      };
+      // Simple event handler for favorites updates
+      const handleFavoritesUpdate = () => {
+        setTimeout(() => loadFavoriteMovies(), 200)
+      }
       
-      // EGYSZERI event listener regisztráció + GLOBÁLIS relay
-      window.addEventListener('favorites-updated', handleAllFavoritesEvents);
-      window.addEventListener('global-favorites-refresh', handleAllFavoritesEvents); // App.vue relay
-      window.addEventListener('movie-liked', handleAllFavoritesEvents); // Fallback csak
-      document.addEventListener('favorites-refresh', handleAllFavoritesEvents); // Fallback csak
-      
-  console.log('FavoriteMoviesView event listeners registered!')
+      // Register event listeners
+      window.addEventListener('favorites-updated', handleFavoritesUpdate)
+      window.addEventListener('movie-liked', handleFavoritesUpdate)
       
       // Cleanup on unmount
       onUnmounted(() => {
-        window.removeEventListener('favorites-updated', handleAllFavoritesEvents);
-        window.removeEventListener('global-favorites-refresh', handleAllFavoritesEvents);
-        window.removeEventListener('movie-liked', handleAllFavoritesEvents);
-        document.removeEventListener('favorites-refresh', handleAllFavoritesEvents);
-  console.log('FavoriteMoviesView event listeners cleaned up!')
-      });
+        window.removeEventListener('favorites-updated', handleFavoritesUpdate)
+        window.removeEventListener('movie-liked', handleFavoritesUpdate)
+      })
       
-      // Visibility change refresh (amikor visszatér a user)
+      // Visibility change refresh (when user returns)
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'visible' && !loading.value) {
-          setTimeout(() => loadFavoriteMovies(), 200);
+          setTimeout(() => loadFavoriteMovies(), 200)
         }
-      };
+      }
       
-      document.addEventListener('visibilitychange', handleVisibilityChange);
+      document.addEventListener('visibilitychange', handleVisibilityChange)
       onUnmounted(() => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-      });
-    });
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+      })
+    })
 
     // Automatikus frissítés amikor visszatérsz erre az oldalra
     onActivated(() => {
@@ -321,9 +255,7 @@ export default {
       console.log('Locale changed to:', newLocale)
       if (favoriteMovies.value && favoriteMovies.value.length > 0) {
         console.log('Re-translating movies for new locale')
-        // Get the original untranslated data and retranslate
-        const originalData = window.favoriteMoviesCache?.data || favoriteMovies.value
-        favoriteMovies.value = translateMoviesArray(originalData, newLocale)
+        favoriteMovies.value = translateMoviesArray(favoriteMovies.value, newLocale)
         console.log('Movies after retranslation:', favoriteMovies.value)
       }
     })
