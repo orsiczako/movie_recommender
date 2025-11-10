@@ -69,6 +69,11 @@
             <h3 class="action-card-title">{{ $t('dashboard.actions.favorite_movies.title') }}</h3>
             <p class="action-card-description">{{ $t('dashboard.actions.favorite_movies.description') }}</p>
           </router-link>
+
+          <router-link to="/ai-chat" class="action-card">
+            <h3 class="action-card-title">{{ $t('dashboard.actions.ai_chat.title') }}</h3>
+            <p class="action-card-description">{{ $t('dashboard.actions.ai_chat.description') }}</p>
+          </router-link>
         </div>
       </div>
     </main>
@@ -397,6 +402,65 @@ export default {
   .content-area {
     padding: 30px 20px;
   }
+  
+  .action-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+}
+
+/* Action Cards */
+.action-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.action-card {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 25px 20px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 140px;
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+  background: var(--card-hover-bg);
+}
+
+.theme-dark .action-card:hover {
+  box-shadow: 
+    var(--shadow-lg),
+    0 0 20px rgba(229, 9, 20, 0.2);
+  border-color: var(--primary);
+}
+
+.action-card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+}
+
+.action-card-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
 }
 
 @media (min-width: 1024px) {

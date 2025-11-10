@@ -29,6 +29,10 @@ export default {
         profile: {
           title: 'Profil',
           description: 'Kezelje a fiókadatait és személyes beállításait.'
+        },
+        ai_chat: {
+          title: 'Film Ajánló',
+          description: 'Gyors filmajánlások műfaj, hangulat vagy kedvenc színészek alapján. Mondj egy irányt, és kapj rögtön opciókat!'
         }
       }
     }
@@ -63,6 +67,10 @@ export default {
         profile: {
           title: 'Profile',
           description: 'Manage your account details and personal settings.'
+        },
+        ai_chat: {
+          title: 'Movie Recommender',
+          description: 'Quick movie recommendations based on genre, mood, or favorite actors. Give me a direction and get instant options!'
         }
       }
     }

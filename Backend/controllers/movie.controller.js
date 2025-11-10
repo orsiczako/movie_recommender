@@ -816,6 +816,69 @@ class MovieController {
 
   // Specifikus műfaj toggle-ölése egy usernek (be/ki kapcsolás)
   /**
+   * GET /api/movies/search - Search movies by title
+   * 
+   * Searches for movies using TMDB API based on query string.
+   * Used by AI Chat for finding specific movie titles and converting them to movie cards.
+   * 
+   * @param {Object} req - Express request object
+   * @param {string} req.query.query - Movie title to search for
+   * @param {number} req.query.page - Optional page number (default: 1)
+   * @param {string} req.query.language - Optional language code (default: 'en')
+   */
+  async searchMovies(req, res) {
+    try {
+      const { query, page = 1, language = 'en' } = req.query;
+
+      if (!query) {
+        return ApiResponse.error(res, 'Query parameter is required', 400);
+      }
+
+      console.log(`Searching for movies with query: "${query}", page: ${page}, language: ${language}`);
+
+      const params = {
+        api_key: this.tmdbApiKey,
+        query: query,
+        page: page,
+        include_adult: false
+      };
+
+      // Apply language parameter if specified
+      if (language && language !== 'en') {
+        params.language = language;
+      }
+
+      const response = await axios.get(`${this.tmdbBaseUrl}/search/movie`, {
+        params: params
+      });
+
+      console.log(`TMDB search returned ${response.data?.results?.length || 0} movies`);
+
+      if (response.data && response.data.results) {
+        const movies = response.data.results.map(movie => this.convertTmdbToFormat(movie));
+        
+        return ApiResponse.success(res, 'Movies found successfully', {
+          movies: movies,
+          totalResults: response.data.total_results,
+          totalPages: response.data.total_pages,
+          currentPage: parseInt(page)
+        });
+      }
+      
+      return ApiResponse.success(res, 'No movies found', {
+        movies: [],
+        totalResults: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+      });
+
+    } catch (error) {
+      console.error('Error in searchMovies:', error);
+      return ApiResponse.serverError(res, error);
+    }
+  }
+
+  /**
    * Toggles a specific genre preference for a user (0 → 1 or 1 → 0)
    * @param {string} userId - The user ID
    * @param {string} genreName - The genre field name to toggle

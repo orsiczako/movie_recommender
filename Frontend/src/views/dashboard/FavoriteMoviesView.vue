@@ -108,6 +108,7 @@ export default {
     const router = useRouter()
     const { currentLocale } = useLocale()
     const { notify } = useNotification()
+    const { user } = useAuth()
     const favoriteMovies = ref([])
     const loading = ref(true)
     const error = ref(null)
@@ -140,7 +141,6 @@ export default {
         loading.value = true
         error.value = null
         // Use authenticated user id if available (fallback to test user id)
-        const { user } = useAuth()
         const userId = user.value?.id
 
 

@@ -16,6 +16,9 @@ import FavoriteMoviesView from '@/views/dashboard/FavoriteMoviesView.vue'
 import PreferencesView from '@/views/preferences/PreferencesView.vue'
 import MovieBrowsingView from '@/views/movies/MovieBrowsingView.vue'
 
+// Chat views
+import AIChatView from '@/views/chat/AIChatView.vue'
+
 const routes = [
   // Redirect root to login
   { 
@@ -115,6 +118,14 @@ const routes = [
     path: '/favorites',
     name: 'favorites',
     component: FavoriteMoviesView,
+    meta: { requiresAuth: true }
+  },
+  
+  // AI Chat route
+  {
+    path: '/ai-chat',
+    name: 'ai-chat',
+    component: AIChatView,
     meta: { requiresAuth: true }
   }
 ]

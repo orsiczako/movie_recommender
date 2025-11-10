@@ -13,6 +13,7 @@ export default {
       back: 'Vissza',
       save: 'Mentés',
       cancel: 'Mégse',
+      retry: 'Újra',
       light: 'Világos',
       dark: 'Sötét'
     },
@@ -40,6 +41,7 @@ export default {
       back: 'Back',
       save: 'Save',
       cancel: 'Cancel',
+      retry: 'Retry',
       light: 'Light',
       dark: 'Dark'
     },
