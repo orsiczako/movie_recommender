@@ -1,7 +1,7 @@
 export default {
   hu: {
     ai_chat: {
-      title: 'Film Ajánló',
+      title: 'Filmajánló',
       assistant_name: 'Film Asszisztens',
       status_online: 'Online',
       input_placeholder: 'Mit szeretnél ma nézni?',
