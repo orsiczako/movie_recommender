@@ -11,24 +11,24 @@
 
     <!-- Bejelentkezési form -->
     <div class="login-container">
-      <h2>Bejelentkezés</h2>
+      <h2>{{ $t('auth.login_title') }}</h2>
       <form @submit.prevent="handleSubmit">
-        <label for="username">Felhasználónév</label>
+        <label for="username">{{ $t('auth.username') }}</label>
         <input 
           type="text" 
           id="username" 
           v-model="form.username" 
-          placeholder="Felhasználónév"
+          :placeholder="$t('auth.username')"
           autocomplete="username"
           required
         >
         
-        <label for="password">Jelszó</label>
+        <label for="password">{{ $t('auth.password') }}</label>
         <input 
           type="password" 
           id="password" 
           v-model="form.password" 
-          placeholder="Jelszó"
+          :placeholder="$t('auth.password')"
           autocomplete="current-password"
           required
         >
@@ -37,15 +37,15 @@
         <div v-if="successMessage" class="success">{{ successMessage }}</div>
         
         <button type="submit" :disabled="loading" @click="handleSubmit">
-          {{ loading ? 'Bejelentkezés...' : 'Belépés' }}
+          {{ loading ? $t('auth.login_title') + '...' : $t('auth.login_button') }}
         </button>
         
         <button type="button" @click="goToRegister">
-          Regisztráció
+          {{ $t('auth.register_button') }}
         </button>
         
         <button type="button" @click="goToForgotPassword" class="forgot-password-btn">
-          Elfelejtettem a jelszót
+          {{ $t('auth.forgot_password') }}
         </button>
       </form>
     </div>

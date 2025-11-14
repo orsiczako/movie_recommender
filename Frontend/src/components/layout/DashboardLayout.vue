@@ -10,7 +10,7 @@
           <i class="icon-back"></i>
           {{ $t('common.back') }}
         </button>
-        <h1 v-if="title" class="page-title">{{ title }}</h1>
+        <h1 v-if="title" class="page-title">{{ typeof title === 'function' ? title() : title }}</h1>
       </div>
 
       <div class="header-right">
@@ -42,7 +42,7 @@ import AppFooter from '../ui/AppFooter.vue'
 
 const props = defineProps({
   title: {
-    type: String,
+    type: [String, Function],
     default: ''
   },
   showBackButton: {

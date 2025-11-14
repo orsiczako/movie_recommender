@@ -427,6 +427,9 @@ export default {
   watch: {
     '$route.params.movieId'() {
       this.loadMovie()
+    },
+    currentLocale() {
+      this.loadMovie()
     }
   }
 }

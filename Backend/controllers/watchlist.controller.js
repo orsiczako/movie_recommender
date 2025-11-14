@@ -1,4 +1,4 @@
-const { successResponse, errorResponse } = require('../service/helpers/api-response.helper');
+const ApiResponse = require('../service/helpers/api-response.helper');
 
 class WatchlistController {
   constructor(models) {
@@ -12,22 +12,22 @@ class WatchlistController {
   async getUserWatchlist(req, res) {
     try {
       const { userId } = req.params;
-      const { page = 1, limit = 20, sortBy = 'added_date', sortOrder = 'DESC' } = req.query;
+      const { page = 1, limit = 20, sortBy = 'added_at', sortOrder = 'DESC' } = req.query;
 
       // Paginálás számítása
       const offset = (page - 1) * limit;
 
       // Rendezési beállítások validálása
-      const validSortFields = ['added_date', 'title', 'release_date', 'vote_average'];
+      const validSortFields = ['added_at', 'title', 'release_date', 'vote_average'];
       const validSortOrders = ['ASC', 'DESC'];
       
-      const orderField = validSortFields.includes(sortBy) ? sortBy : 'added_date';
+      const orderField = validSortFields.includes(sortBy) ? sortBy : 'added_at';
       const orderDirection = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
       // Rendezés beállítása
       let orderClause;
-      if (orderField === 'added_date') {
-        orderClause = [['added_date', orderDirection]];
+      if (orderField === 'added_at') {
+        orderClause = [['added_at', orderDirection]];
       } else {
         orderClause = [[{ model: this.Movie, as: 'movie' }, orderField, orderDirection]];
       }
@@ -39,8 +39,8 @@ class WatchlistController {
           as: 'movie',
           attributes: [
             'id', 'tmdb_id', 'title', 'original_title', 'overview',
-            'poster_path', 'backdrop_path', 'release_date', 'vote_average',
-            'runtime', 'genre_ids'
+            'poster_path', 'backdrop_path', 'release_date', 'tmdb_rating',
+            'runtime_minutes', 'genres'
           ]
         }],
         order: orderClause,
@@ -58,19 +58,14 @@ class WatchlistController {
           if (itemData.movie.backdrop_path) {
             itemData.movie.backdrop_url = `https://image.tmdb.org/t/p/w500${itemData.movie.backdrop_path}`;
           }
-          // Genre IDs feldolgozása
-          if (itemData.movie.genre_ids) {
-            try {
-              itemData.movie.genres = JSON.parse(itemData.movie.genre_ids);
-            } catch (e) {
-              itemData.movie.genres = [];
-            }
-          }
+          // Normalize field names for frontend compatibility
+          itemData.movie.vote_average = itemData.movie.tmdb_rating;
+          itemData.movie.runtime = itemData.movie.runtime_minutes;
         }
         return itemData;
       });
 
-      return successResponse(res, 'Watchlist retrieved successfully', {
+      return ApiResponse.success(res, 'user.success.watchlist_retrieved', {
         watchlist: processedWatchlist,
         pagination: {
           currentPage: parseInt(page),
@@ -82,7 +77,7 @@ class WatchlistController {
 
     } catch (error) {
       console.error('Error getting user watchlist:', error);
-      return errorResponse(res, 'Failed to get user watchlist', 500);
+      return ApiResponse.error(res, 'user.errors.watchlist_failed', 500);
     }
   }
 
@@ -92,13 +87,13 @@ class WatchlistController {
       const { userId, movieId } = req.body;
 
       if (!userId || !movieId) {
-        return errorResponse(res, 'userId and movieId are required', 400);
+        return ApiResponse.error(res, 'user.errors.missing_fields', 400);
       }
 
       // Ellenőrizzük hogy létezik-e a felhasználó
       const user = await this.User.findByPk(userId);
       if (!user) {
-        return errorResponse(res, 'User not found', 404);
+        return ApiResponse.error(res, 'user.errors.not_found', 404);
       }
 
       // Film keresése tmdb_id alapján
@@ -107,7 +102,7 @@ class WatchlistController {
       });
 
       if (!movie) {
-        return errorResponse(res, 'Movie not found. Please load movie data first.', 404);
+        return ApiResponse.error(res, 'movie.errors.not_found', 404);
       }
 
       // Ellenőrizzük hogy már van-e a watchlist-en
@@ -119,7 +114,7 @@ class WatchlistController {
       });
 
       if (existingWatchlistItem) {
-        return errorResponse(res, 'Movie already in watchlist', 409);
+        return ApiResponse.error(res, 'user.errors.already_in_watchlist', 409);
       }
 
       // Hozzáadás watchlist-hez
@@ -160,7 +155,7 @@ class WatchlistController {
         );
       }
 
-      return successResponse(res, 'Movie added to watchlist successfully', {
+      return ApiResponse.success(res, 'user.success.added_to_watchlist', {
         watchlistItem: watchlistItem,
         movie: {
           id: movie.id,
@@ -171,7 +166,7 @@ class WatchlistController {
 
     } catch (error) {
       console.error('Error adding to watchlist:', error);
-      return errorResponse(res, 'Failed to add movie to watchlist', 500);
+      return ApiResponse.error(res, 'user.errors.watchlist_add_failed', 500);
     }
   }
 
@@ -186,7 +181,7 @@ class WatchlistController {
       });
 
       if (!movie) {
-        return errorResponse(res, 'Movie not found', 404);
+        return ApiResponse.error(res, 'movie.errors.not_found', 404);
       }
 
       // Eltávolítás watchlist-ből
@@ -198,10 +193,10 @@ class WatchlistController {
       });
 
       if (deleted === 0) {
-        return errorResponse(res, 'Movie not found in watchlist', 404);
+        return ApiResponse.error(res, 'user.errors.not_in_watchlist', 404);
       }
 
-      return successResponse(res, 'Movie removed from watchlist successfully', {
+      return ApiResponse.success(res, 'user.success.removed_from_watchlist', {
         removed: true,
         movie: {
           tmdb_id: movie.tmdb_id,
@@ -211,7 +206,7 @@ class WatchlistController {
 
     } catch (error) {
       console.error('Error removing from watchlist:', error);
-      return errorResponse(res, 'Failed to remove movie from watchlist', 500);
+      return ApiResponse.error(res, 'user.errors.watchlist_remove_failed', 500);
     }
   }
 
@@ -310,11 +305,11 @@ class WatchlistController {
       stats.averageRuntime = moviesWithRuntime > 0 ? 
         Math.round(totalRuntime / moviesWithRuntime) : 0;
 
-      return successResponse(res, 'Watchlist stats retrieved successfully', stats);
+      return ApiResponse.success(res, 'user.success.watchlist_stats_retrieved', stats);
 
     } catch (error) {
       console.error('Error getting watchlist stats:', error);
-      return errorResponse(res, 'Failed to get watchlist stats', 500);
+      return ApiResponse.error(res, 'user.errors.watchlist_stats_failed', 500);
     }
   }
 

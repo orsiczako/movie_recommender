@@ -43,11 +43,7 @@ export default {
     async changeLanguage(lang) {
       console.log('LanguageSwitcher: Changing language to:', lang)
       await this.setLocale(lang)
-      
-      // Force reload of current page to refresh movie data
-      setTimeout(() => {
-        window.location.reload()
-      }, 100)
+      // No reload needed - components watch currentLocale and update automatically
     }
   }
 }

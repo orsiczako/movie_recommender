@@ -1,6 +1,6 @@
 <template>
   <DashboardLayout 
-    :title="$t('favoriteMovies.title')" 
+    :title="pageTitle" 
     :show-back-button="true"
     class="favorites-page"
   >
@@ -43,6 +43,7 @@
           v-for="movie in favoriteMovies" 
           :key="movie.id"
           class="movie-card"
+          @click="router.push(`/movies/${movie.id}`)"
         >
           <div class="movie-poster">
             <img 
@@ -77,7 +78,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onActivated, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onActivated, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useLocale } from '@/composables/useLocale'
@@ -113,6 +114,9 @@ export default {
     const loading = ref(true)
     const error = ref(null)
 
+    // Computed property for page title to ensure reactivity on locale change
+    const pageTitle = computed(() => t('favoriteMovies.title'))
+
     const getMovieGenres = (movie) => {
       const processedGenres = processAndTranslateGenres(movie.genres, currentLocale.value)
       return processedGenres
@@ -145,7 +149,7 @@ export default {
 
 
         // Get favorite movies from API (higher limit to get all favorites)
-        const response = await interactionsService.getFavoriteMovies(userId, 1, 100);
+        const response = await interactionsService.getFavoriteMovies(userId, 1, 100, { language: currentLocale.value });
         
         console.log('API response:', response)
         
@@ -254,13 +258,13 @@ export default {
     watch(currentLocale, (newLocale) => {
       console.log('Locale changed to:', newLocale)
       if (favoriteMovies.value && favoriteMovies.value.length > 0) {
-        console.log('Re-translating movies for new locale')
-        favoriteMovies.value = translateMoviesArray(favoriteMovies.value, newLocale)
-        console.log('Movies after retranslation:', favoriteMovies.value)
+        console.log('Reloading movies for new locale with posters')
+        loadFavoriteMovies()
       }
     })
 
     return {
+      pageTitle,
       favoriteMovies,
       loading,
       error,
@@ -296,6 +300,7 @@ export default {
   padding: 12px;
   transition: all 0.3s ease;
   box-shadow: var(--shadow-md);
+  cursor: pointer;
 }
 
 .theme-dark .movie-card {
@@ -399,35 +404,105 @@ export default {
 /* Responsive design */
 @media (max-width: 768px) {
   .movies-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
-  }
-  
-  .movie-card {
-    padding: 10px;
-  }
-  
-  .movie-poster {
-    height: 140px;
-  }
-  
-  .refresh-section {
-    margin-bottom: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .movies-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 12px 0;
   }
   
   .movie-card {
     padding: 8px;
+    border-radius: 12px;
   }
   
   .movie-poster {
-    height: 120px;
+    height: 200px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+  }
+  
+  .movie-title {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  
+  .movie-year {
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+  }
+  
+  .movie-genres {
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  
+  .genre-tag {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+    border-radius: 4px;
+  }
+  
+  .movie-rating {
+    font-size: 0.8rem;
+  }
+  
+  .movie-rating svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .movies-content {
+    min-height: 50vh;
+  }
+  
+  .movies-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px 0;
+  }
+  
+  .movie-card {
+    padding: 6px;
+    border-radius: 10px;
+  }
+  
+  .movie-poster {
+    height: 160px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+  }
+  
+  .movie-title {
+    font-size: 0.85rem;
+    margin-bottom: 3px;
+    line-height: 1.2;
+  }
+  
+  .movie-year {
+    font-size: 0.7rem;
+    margin-bottom: 4px;
+  }
+  
+  .movie-genres {
+    gap: 3px;
+    margin-bottom: 4px;
+  }
+  
+  .genre-tag {
+    padding: 2px 5px;
+    font-size: 0.65rem;
+    border-radius: 3px;
+  }
+  
+  .movie-rating {
+    font-size: 0.75rem;
+  }
+  
+  .movie-rating svg {
+    width: 12px;
+    height: 12px;
   }
 }
 </style>

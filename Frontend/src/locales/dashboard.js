@@ -4,7 +4,7 @@ export default {
       title: 'Főoldal',
       welcome: {
         title: 'Filmajánló',
-        description: 'Fedezze fel a személyre szabott film ajánlásokat és keresse meg kedvenc filmjeit!',
+        description: 'Fedezze fel a személyre szabott filmajánlásokat és keresse meg kedvenc filmjeit!',
         greeting: 'Üdvözöljük, {name}!'
       },
       profile: 'Profil',
@@ -19,7 +19,7 @@ export default {
           description: 'Állítsa be a film preferenciáit és kedvenc műfajait a jobb ajánlásokért.'
         },
         browse_movies: {
-          title: 'Filmek böngészése',
+          title: 'Találd meg az igazit',
           description: 'Böngéssze a filmek katalógusát és fedezzen fel új kedvenceket.'
         },
         favorite_movies: {
@@ -31,7 +31,7 @@ export default {
           description: 'Kezelje a fiókadatait és személyes beállításait.'
         },
         ai_chat: {
-          title: 'Film Ajánló',
+          title: 'Filmajánló',
           description: 'Gyors filmajánlások műfaj, hangulat vagy kedvenc színészek alapján. Mondj egy irányt, és kapj rögtön opciókat!'
         }
       }
@@ -57,7 +57,7 @@ export default {
           description: 'Set up your movie preferences and favorite genres for better recommendations.'
         },
         browse_movies: {
-          title: 'Browse Movies',
+          title: 'Find Your Match',
           description: 'Browse the movie catalog and discover new favorites.'
         },
         favorite_movies: {

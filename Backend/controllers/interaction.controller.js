@@ -298,10 +298,10 @@ class InteractionController {
   async getUserInteractions(req, res) {
     try {
       const { userId } = req.params;
-      const { page = 1, limit = 20, interactionType } = req.query;
+      const { page = 1, limit = 20, interactionType, language = 'en' } = req.query;
 
       console.log('Getting user interactions for userId:', userId);
-      console.log('Query params:', { page, limit, interactionType });
+      console.log('Query params:', { page, limit, interactionType, language });
 
       // Szűrési feltételek
       const whereClause = { user_id: userId };
@@ -330,14 +330,44 @@ class InteractionController {
 
       console.log('Query completed. Count:', count, 'Rows found:', interactions.length);
 
-      // Kép URL-ek hozzáadása
-      const processedInteractions = interactions.map(interaction => {
+      // Fetch movie details from TMDB in requested language
+      const processedInteractions = await Promise.all(interactions.map(async interaction => {
         const interactionData = interaction.toJSON();
-        if (interactionData.movie && interactionData.movie.poster_path) {
-          interactionData.movie.poster_url = `https://image.tmdb.org/t/p/w500${interactionData.movie.poster_path}`;
+        
+        if (interactionData.movie && interactionData.movie.tmdb_id) {
+          try {
+            // Fetch movie details from TMDB with language parameter
+            const tmdbResponse = await fetch(
+              `${this.tmdbBaseUrl}/movie/${interactionData.movie.tmdb_id}?api_key=${this.tmdbApiKey}&language=${language}`
+            );
+            
+            if (tmdbResponse.ok) {
+              const tmdbData = await tmdbResponse.json();
+              
+              // Update movie data with localized version
+              interactionData.movie.title = tmdbData.title || interactionData.movie.title;
+              interactionData.movie.poster_path = tmdbData.poster_path || interactionData.movie.poster_path;
+              interactionData.movie.poster_url = tmdbData.poster_path 
+                ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}`
+                : null;
+              interactionData.movie.genres = tmdbData.genres || interactionData.movie.genres;
+            } else {
+              // Fallback to database data with constructed poster URL
+              if (interactionData.movie.poster_path) {
+                interactionData.movie.poster_url = `https://image.tmdb.org/t/p/w500${interactionData.movie.poster_path}`;
+              }
+            }
+          } catch (tmdbError) {
+            console.error('Error fetching TMDB data for movie:', interactionData.movie.tmdb_id, tmdbError);
+            // Fallback to database data
+            if (interactionData.movie.poster_path) {
+              interactionData.movie.poster_url = `https://image.tmdb.org/t/p/w500${interactionData.movie.poster_path}`;
+            }
+          }
         }
+        
         return interactionData;
-      });
+      }));
 
       console.log('Processed interactions:', processedInteractions.length);
 

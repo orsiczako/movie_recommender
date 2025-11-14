@@ -8,6 +8,9 @@ const moviesRouterFactory = require('./movies');
 const interactionsRouterFactory = require('./interactions');
 const watchlistRouterFactory = require('./watchlist');
 const recommendationsRouterFactory = require('./recommendations');
+const soundtrackRouterFactory = require('./soundtrack');
+// Direct routers (not factories)
+const chatRouter = require('./chat');
 
 // Factory függvény, ami fogadja a modelleket
 module.exports = (models) => {
@@ -20,6 +23,8 @@ module.exports = (models) => {
   router.use('/interactions', interactionsRouterFactory(models));
   router.use('/watchlist', watchlistRouterFactory(models));
   router.use('/recommendations', recommendationsRouterFactory(models));
+  router.use('/soundtrack', soundtrackRouterFactory());
+  router.use('/chat', chatRouter);
 
   return router;
 };

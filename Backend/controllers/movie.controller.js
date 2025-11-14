@@ -53,7 +53,7 @@ class MovieController {
         return ApiResponse.error(res, 'user.errors.missing_params', 400);
       }
 
-      console.log(`Getting movies for user ${userId}, page ${page}, language: ${language}`);
+      
 
       // Query user's previously liked movies to filter them out from recommendations
       // This prevents showing movies the user has already interacted with positively
@@ -70,7 +70,7 @@ class MovieController {
       });
       
       const likedTmdbIds = likedInteractions.map(interaction => interaction.movie.tmdb_id);
-      console.log(`User already liked ${likedTmdbIds.length} movies, will filter them out:`, likedTmdbIds);
+      
 
       // Fetch user preferences to determine which movie discovery strategy to use
       const preferences = await this.UserPreferences.findOne({
@@ -81,33 +81,14 @@ class MovieController {
       
       // Apply preference-based movie discovery with fallback logic
       if (preferences) {
-        // Log current user preferences for debugging
-        console.log('Checking user preferences...');
-        console.log('genre_documentary:', preferences.genre_documentary);
-        console.log('genre_anime:', preferences.genre_anime);
-        console.log('genre_action:', preferences.genre_action);
-        console.log('genre_family:', preferences.genre_family);
-        console.log('genre_history:', preferences.genre_history);
-        console.log('genre_music:', preferences.genre_music);
-        console.log('genre_mystery:', preferences.genre_mystery);
-        console.log('genre_war:', preferences.genre_war);
-        console.log('genre_western:', preferences.genre_western);
+        
         
         // PRIORITY GENRE: Documentary movies
         // Documentary has highest priority due to specific user interest patterns
         if (preferences.genre_documentary === 1) {
-          console.log('User wants documentary → calling getDocumentaryMovies');
+          
           movies = await this.getGenreMovies(page, 99, userId, language); // 99 = Documentary genre ID
-          console.log(`Documentary movies returned: ${movies.length}`);
-          if (movies.length > 0) {
-            console.log('First documentary:', movies[0].title);
-          }
-          // IMPORTANT: If documentary preference is set, return immediately without checking other genres
-          // This ensures documentary preference takes absolute priority
-          console.log(`Returning ${movies.length} documentary movies to frontend`);
-          if (movies.length > 0) {
-            console.log('Sample movie data:', JSON.stringify(movies[0], null, 2));
-          }
+          
           return ApiResponse.success(res, 'user.success.data_retrieved', {
             movies: movies,
             totalResults: movies.length,
@@ -117,12 +98,10 @@ class MovieController {
         }
         // SPECIAL CASE: Anime movies (Animation genre + Japan origin country)
         else if (preferences.genre_anime === 1) {
-          console.log('User wants anime → calling getAnimeMovies');
           movies = await this.getAnimeMovies(page, userId, language);
         }
         // ACTION GENRE: High-energy, action-packed movies
         else if (preferences.genre_action === 1) {
-          console.log('User wants action → calling getActionMovies');
           movies = await this.getGenreMovies(page, 28, userId, language); // 28 = Action genre ID
         }
         // ADDITIONAL GENRES: Handle other user preferences
@@ -157,37 +136,30 @@ class MovieController {
           movies = await this.getGenreMovies(page, 80, userId, language); // 80 = Crime
         }
         else if (preferences.genre_family === 1) {
-          console.log('User wants family movies → calling getFamilyMovies');
           movies = await this.getGenreMovies(page, 10751, userId, language); // 10751 = Family
         }
         else if (preferences.genre_history === 1) {
-          console.log('User wants history movies → calling getHistoryMovies');
           movies = await this.getGenreMovies(page, 36, userId, language); // 36 = History
         }
         else if (preferences.genre_music === 1) {
-          console.log('User wants music movies → calling getMusicMovies');
           movies = await this.getGenreMovies(page, 10402, userId, language); // 10402 = Music
         }
         else if (preferences.genre_mystery === 1) {
-          console.log('User wants mystery movies → calling getMysteryMovies');
           movies = await this.getGenreMovies(page, 9648, userId, language); // 9648 = Mystery
         }
         else if (preferences.genre_war === 1) {
-          console.log('User wants war movies → calling getWarMovies');
           movies = await this.getGenreMovies(page, 10752, userId, language); // 10752 = War
         }
         else if (preferences.genre_western === 1) {
-          console.log('User wants western movies → calling getWesternMovies');
           movies = await this.getGenreMovies(page, 37, userId, language); // 37 = Western
         }
         // FALLBACK STRATEGY: When no specific genre preferences are active, default to popular movies
         else {
-          console.log('No active genre preferences → fallback to popular movies');
+          
           movies = await this.getDefaultMovies(page, userId, language);
         }
       } else {
         // NO PREFERENCES FOUND: User hasn't set any preferences yet, show popular content
-        console.log('No preferences found → fallback to popular movies');
         movies = await this.getDefaultMovies(page, userId);
       }
 
@@ -219,7 +191,7 @@ class MovieController {
       const page = parseInt(req.query.page) || 1;
       const language = req.query.language || 'hu';
       
-      console.log(`Getting popular movies, page ${page}, language: ${language}`);
+      
 
       const movies = await this.getDefaultMovies(page, null, language);
       
@@ -975,6 +947,58 @@ class MovieController {
       console.error('Error filtering liked movies:', error);
       // Ha hiba van, visszaadjuk az eredeti listát
       return movies;
+    }
+  }
+
+  /**
+   * Get detailed information about a specific movie by TMDB ID
+   * 
+   * @param {Object} req - Express request object
+   * @param {string} req.params.movieId - TMDB movie ID
+   * @param {string} req.query.language - Optional language code (default: 'en')
+   */
+  async getMovieDetails(req, res) {
+    try {
+      const { movieId } = req.params;
+      const { language = 'en' } = req.query;
+
+      console.log(`Fetching movie details for TMDB ID: ${movieId}, language: ${language}`);
+
+      if (!movieId) {
+        return ApiResponse.error(res, 'Movie ID is required', 400);
+      }
+
+      const params = {
+        api_key: this.tmdbApiKey,
+        language: language,
+        append_to_response: 'credits,videos,images'
+      };
+
+      const response = await axios.get(`${this.tmdbBaseUrl}/movie/${movieId}`, {
+        params: params
+      });
+
+      if (response.data) {
+        const movieData = this.convertTmdbToFormat(response.data);
+        
+        // Add additional details
+        movieData.credits = response.data.credits;
+        movieData.videos = response.data.videos?.results || [];
+        movieData.images = response.data.images;
+        
+        return ApiResponse.success(res, 'Movie details retrieved successfully', movieData);
+      }
+      
+      return ApiResponse.error(res, 'Movie not found', 404);
+      
+    } catch (error) {
+      console.error('Error fetching movie details:', error);
+      
+      if (error.response?.status === 404) {
+        return ApiResponse.error(res, 'Movie not found', 404);
+      }
+      
+      return ApiResponse.serverError(res, error);
     }
   }
 }

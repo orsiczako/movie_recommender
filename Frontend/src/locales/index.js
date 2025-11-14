@@ -7,6 +7,7 @@ import preferences from './preferences.js'
 import movies from './movies.js'
 import favoriteMovies from './favoriteMovies.js'
 import aiChat from './aiChat.js'
+import soundtrack from './soundtrack.js'
 
 // Összevonjuk az összes fordítást
 function mergeTranslations(...sources) {
@@ -33,6 +34,7 @@ export default mergeTranslations(
   preferences,
   movies,
   favoriteMovies,
-  aiChat
+  aiChat,
+  soundtrack
 )
 

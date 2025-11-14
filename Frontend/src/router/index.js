@@ -15,6 +15,7 @@ import FavoriteMoviesView from '@/views/dashboard/FavoriteMoviesView.vue'
 // Movie views
 import PreferencesView from '@/views/preferences/PreferencesView.vue'
 import MovieBrowsingView from '@/views/movies/MovieBrowsingView.vue'
+import MovieDetailView from '@/views/movies/MovieDetailView.vue'
 
 // Chat views
 import AIChatView from '@/views/chat/AIChatView.vue'
@@ -112,6 +113,12 @@ const routes = [
     path: '/movies',
     name: 'movies',
     component: MovieBrowsingView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/movies/:id',
+    name: 'movie-detail',
+    component: MovieDetailView,
     meta: { requiresAuth: true }
   },
   {
