@@ -979,8 +979,12 @@ class MovieController {
       });
 
       if (response.data) {
+        // Use the converter for base properties, but get genres directly from the detailed response.
         const movieData = this.convertTmdbToFormat(response.data);
         
+        // *** FIX: Overwrite the genres from the converter with the correct, full genre objects from the API response. ***
+        movieData.genres = response.data.genres;
+
         // Add additional details
         movieData.credits = response.data.credits;
         movieData.videos = response.data.videos?.results || [];

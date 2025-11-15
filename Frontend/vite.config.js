@@ -21,6 +21,9 @@ export default defineConfig(({ mode }) => {
     define: {
       __APP_VERSION__: JSON.stringify(packageJson.version),
       __APP_NAME__: JSON.stringify(packageJson.name)
+      // Expose app version and name to the client-side code
+      // This is the standard Vite way to handle environment variables.
+
     },
     server: {
       port: parseInt(env.VITE_PORT),

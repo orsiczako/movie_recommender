@@ -169,7 +169,7 @@ export default {
 <style scoped>
 .movie-card {
   position: relative;
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
@@ -179,19 +179,22 @@ export default {
   max-width: 220px;
   width: 100%;
   margin: 0 auto;
+  border: 1px solid var(--border-primary);
 }
 
 .movie-card:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+  border-color: var(--primary);
 }
 
 .movie-poster {
   position: relative;
   width: 100%;
   height: 0;
-  padding-bottom: 130%; /* Optimized aspect ratio for larger cards */
+  padding-bottom: 130%;
   overflow: hidden;
+  background: var(--bg-tertiary);
 }
 
 .movie-poster img {
@@ -257,7 +260,7 @@ export default {
 
 .movie-info {
   padding: 12px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: var(--bg-secondary);
   min-height: 100px;
   display: flex;
   flex-direction: column;
@@ -267,7 +270,7 @@ export default {
 .movie-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #212529;
+  color: var(--text-primary);
   margin: 0 0 6px 0;
   line-height: 1.2;
   display: -webkit-box;
@@ -279,42 +282,19 @@ export default {
 
 .movie-year {
   font-size: 0.75rem;
-  color: #6c757d;
+  color: var(--text-secondary);
   margin: 0 0 6px 0;
   font-weight: 500;
 }
 
 .movie-overview {
   font-size: 0.75rem;
-  color: #6c757d;
+  color: var(--text-secondary);
   line-height: 1.4;
   margin: 0;
   text-align: justify;
   word-wrap: break-word;
   hyphens: auto;
-}
-
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  .movie-card {
-    background: #343a40;
-  }
-  
-  .movie-info {
-    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
-  }
-  
-  .movie-title {
-    color: #f8f9fa;
-  }
-  
-  .movie-year {
-    color: #adb5bd;
-  }
-  
-  .movie-rating span {
-    color: #dee2e6;
-  }
 }
 
 /* Responsive design */

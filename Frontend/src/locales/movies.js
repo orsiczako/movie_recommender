@@ -22,6 +22,7 @@ export default {
       age_rating: 'Korhatár',
       runtime: 'Időtartam',
       statistics: 'Statisztikák',
+      description: 'Leírás',
       quality_indicators: 'Minőségi mutatók',
       fun_facts: 'Érdekességek',
       detailed_description: 'Részletes leírás'
@@ -187,6 +188,7 @@ export default {
       age_rating: 'Age Rating',
       runtime: 'Runtime',
       statistics: 'Statistics',
+      description: 'Description',
       quality_indicators: 'Quality Indicators',
       fun_facts: 'Fun Facts',
       detailed_description: 'Detailed Description'

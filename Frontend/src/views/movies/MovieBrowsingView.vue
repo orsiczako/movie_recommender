@@ -1200,7 +1200,7 @@ export default {
   left: 0;
   right: 0;
   height: 100%;
-  background: white;
+  background: var(--bg-primary);
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   border-radius: 20px 20px 0 0;
@@ -1225,7 +1225,7 @@ export default {
 .detail-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-secondary);
   margin: 0 0 1rem 0;
 }
 
@@ -1278,27 +1278,27 @@ export default {
 }
 
 .info-label {
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .info-value {
-  color: #333;
+  color: var(--text-primary);
   font-weight: 600;
   text-align: right;
   max-width: 60%;
 }
 
 .extended-plot {
-  background: #f8f9fa;
+  background: var(--card-bg);
   padding: 1rem;
   border-radius: 8px;
-  border-left: 4px solid var(--primary-color);
+  border-left: 4px solid var(--primary);
 }
 
 .extended-plot p {
   margin: 0;
-  color: #555;
+  color: var(--text-secondary);
   line-height: 1.6;
   font-size: 0.95rem;
 }
@@ -1695,11 +1695,6 @@ export default {
 .stat-item {
   background: var(--card-bg) !important;
   border-color: var(--border-primary) !important;
-}
-
-.movie-info {
-  background: var(--card-bg) !important;
-  color: var(--text-primary) !important;
 }
 
 .scroll-dot {

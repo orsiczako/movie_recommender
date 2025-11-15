@@ -51,17 +51,24 @@
               :alt="movie.title"
               @error="handleImageError"
             />
+            <div class="movie-watched-status" :class="{ 'is-watched': movie.watched }">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path v-if="movie.watched" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                <path v-else d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+              </svg>
+              <span>{{ movie.watched ? $t('favoriteMovies.seen') : $t('favoriteMovies.notSeen') }}</span>
+            </div>
           </div>
           <div class="movie-info">
             <h3 class="movie-title">{{ movie.title || 'Unknown Movie' }}</h3>
             <p class="movie-year" v-if="movie.release_year">{{ movie.release_year }}</p>
             <div class="movie-genres" v-if="getMovieGenres(movie).length > 0">
               <span 
-                v-for="genre in getMovieGenres(movie).slice(0, 3)" 
+                v-for="genre in getMovieGenres(movie).slice(0, 2)" 
                 :key="genre"
                 class="genre-tag"
               >
-                {{ getLocalizedGenre(genre) }}
+                {{ genre }}
               </span>
             </div>
             <div class="movie-rating" v-if="movie.rating && movie.rating > 0">
@@ -118,23 +125,47 @@ export default {
     const pageTitle = computed(() => t('favoriteMovies.title'))
 
     const getMovieGenres = (movie) => {
-      const processedGenres = processAndTranslateGenres(movie.genres, currentLocale.value)
-      return processedGenres
-    }
-
-    const getLocalizedGenre = (genre) => {
-      // Handle different genre formats
-      if (typeof genre === 'object' && genre.name) {
-        return genre.name
-      } else if (typeof genre === 'string') {
-        return genre
-      } else if (typeof genre === 'number') {
-        // If it's just a number, try to get the Hungarian name
-        return processAndTranslateGenres([genre], currentLocale.value)[0]?.name || `Genre ${genre}`
+      const genres = movie.genres;
+      if (!genres) return []
+      
+      // 1. Ha már tömb
+      if (Array.isArray(genres)) {
+        // Ha objektumokat tartalmaz (pl. [{id: 28, name: "Action"}])
+        if (genres.length > 0 && typeof genres[0] === 'object' && genres[0].name) {
+          return genres.map(g => g.name)
+        }
+        // Ha már stringek (pl. ["Action", "Adventure"])
+        return genres.filter(g => g && typeof g === 'string')
       }
-      // Fallback
-      return genre?.toString() || 'Unknown Genre'
-    }
+      
+      // 2. Ha string (JSON vagy vesszővel elválasztott)
+      if (typeof genres === 'string') {
+        try {
+          const parsed = JSON.parse(genres)
+          if (Array.isArray(parsed)) {
+            if (parsed.length > 0 && typeof parsed[0] === 'object' && parsed[0].name) {
+              return parsed.map(g => g.name)
+            }
+            return parsed.filter(g => g && typeof g === 'string')
+          }
+          return []
+        } catch {
+          // Ha nem JSON (pl. egy vesszővel elválasztott string: "Action, Adventure")
+          return genres.split(',').map(g => g.trim()).filter(g => g.length > 0)
+        }
+      }
+      
+      // 3. Ha objektum (de nem tömb és nem string)
+      if (typeof genres === 'object' && genres !== null) {
+        const values = Object.values(genres)
+        if (values.length > 0 && typeof values[0] === 'object' && values[0].name) {
+          return values.map(g => g.name)
+        }
+        return values.filter(g => g && typeof g === 'string')
+      }
+
+      return []
+    };
 
     const handleImageError = (event) => {
       event.target.src = 'https://via.placeholder.com/300x450?text=No+Image'
@@ -157,6 +188,7 @@ export default {
           // Process the interactions to extract movie data
           console.log('Processing interactions:', response.data.data.interactions)
           const movieData = response.data.data.interactions.map(interaction => {
+            console.log('Interaction object:', interaction); // Log the interaction object
             // Process genres properly
             let genres = []
             if (interaction.movie.genres) {
@@ -180,15 +212,14 @@ export default {
               release_year: interaction.movie.release_date ? new Date(interaction.movie.release_date).getFullYear() : null,
               rating: interaction.movie.tmdb_rating,
               genres: genres,
-              interactionDate: interaction.created_at
+              interactionDate: interaction.created_at,
+              watched: interaction.movie.watched === 1 || interaction.movie.watched === true
             }
           })
           
           console.log('Processed movie data before translation:', movieData)
-          // Apply translation to the loaded movies using shared service
-          const translatedMovies = translateMoviesArray(movieData, currentLocale.value)
-          console.log('Translated movie data:', translatedMovies)
-          favoriteMovies.value = translatedMovies
+          // The backend now provides translated data, so no need for frontend translation.
+          favoriteMovies.value = movieData
           
         } else {
           // If no interactions found, show empty state
@@ -268,7 +299,6 @@ export default {
       favoriteMovies,
       loading,
       error,
-      getLocalizedGenre,
       getMovieGenres,
       handleImageError,
       loadFavoriteMovies,
@@ -326,6 +356,7 @@ export default {
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 12px;
+  position: relative;
   background: var(--bg-tertiary);
   display: flex;
   align-items: center;
@@ -390,6 +421,29 @@ export default {
   font-size: 0.9rem;
 }
 
+.movie-watched-status {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.movie-watched-status.is-watched {
+  background: var(--primary); /* Váltás a fő piros színre a konzisztencia érdekében */
+  color: white; /* A szöveg színe legyen fehér a piros háttéren */
+}
+
 .movie-rating svg {
   width: 16px;
   height: 16px;
@@ -446,6 +500,12 @@ export default {
     font-size: 0.8rem;
   }
   
+  .movie-watched-status {
+    top: 6px;
+    right: 6px;
+    font-size: 0.65rem;
+  }
+
   .movie-rating svg {
     width: 14px;
     height: 14px;
@@ -500,6 +560,12 @@ export default {
     font-size: 0.75rem;
   }
   
+  .movie-watched-status {
+    top: 4px;
+    right: 4px;
+    font-size: 0.6rem;
+  }
+
   .movie-rating svg {
     width: 12px;
     height: 12px;

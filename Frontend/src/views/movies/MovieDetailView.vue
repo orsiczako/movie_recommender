@@ -1,19 +1,17 @@
 <template>
-  <DashboardLayout 
-    :title="movie?.title || 'Film részletek'" 
-    :show-back-button="true" 
+  <DashboardLayout
+    :title="movie?.title || 'Film részletek'"
+    :show-back-button="true"
     back-route="/favorites"
     class="movie-detail-view"
   >
-    <!-- Loading state -->
-    <BaseSpinner 
-      v-if="loading" 
+    <BaseSpinner
+      v-if="loading"
       size="large"
       text="Film betöltése..."
       centered
     />
 
-    <!-- Error state -->
     <BaseErrorState
       v-else-if="error"
       type="error"
@@ -23,25 +21,23 @@
       @retry="loadMovie"
     />
 
-    <!-- Movie content -->
     <div v-else-if="movie" class="movie-content">
-      <!-- Movie Header -->
       <div class="movie-header">
         <div class="movie-poster">
-          <img 
+          <img
             :src="getPosterUrl(movie.poster_path)"
             :alt="movie.title"
             @error="handleImageError"
             class="poster-image"
           />
         </div>
-        
+
         <div class="movie-info">
           <h1 class="movie-title">{{ movie.title }}</h1>
           <p class="movie-subtitle" v-if="movie.original_title && movie.original_title !== movie.title">
             {{ movie.original_title }}
           </p>
-          
+
           <div class="movie-meta">
             <span class="year" v-if="movie.release_date">{{ getYear(movie.release_date) }}</span>
             <span class="rating" v-if="movie.tmdb_rating">
@@ -54,8 +50,8 @@
           </div>
 
           <div class="genres" v-if="movie.genres">
-            <span 
-              v-for="genre in getGenres(movie.genres)" 
+            <span
+              v-for="genre in getGenres(movie.genres)"
               :key="genre"
               class="genre-tag"
             >
@@ -64,7 +60,7 @@
           </div>
 
           <div class="action-buttons">
-            <button 
+            <button
               class="watched-btn"
               :class="{ 'watched': isWatched }"
               @click="toggleWatched"
@@ -76,13 +72,13 @@
               <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
               </svg>
-              {{ isWatched 
+              {{ isWatched
                 ? (currentLocale === 'hu' ? 'Láttam' : 'Seen')
                 : (currentLocale === 'hu' ? 'Nem láttam' : 'Haven\'t Seen')
               }}
             </button>
 
-            <button 
+            <button
               class="delete-btn"
               @click="deleteFromFavorites"
             >
@@ -95,23 +91,20 @@
         </div>
       </div>
 
-      <!-- Movie Description -->
       <div class="movie-description" v-if="movie.overview">
-        <h2>Leírás</h2>
+        <h2>{{ t('details.description') }}</h2>
         <p>{{ movie.overview }}</p>
       </div>
 
-      <!-- Soundtrack Section -->
-      <SoundtrackSection 
+      <SoundtrackSection
         :movie-title="movie.original_title || movie.title"
         :movie-year="getYear(movie.release_date)"
         :locale="$i18n.locale || 'en'"
         :auto-load="true"
       />
     </div>
-    
-    <!-- Movie Chat Widget -->
-    <MovieChatWidget 
+
+    <MovieChatWidget
       v-if="movie"
       :movie-title="movie.original_title || movie.title"
       :movie-year="getYear(movie.release_date)"
@@ -140,14 +133,14 @@ export default {
     SoundtrackSection,
     MovieChatWidget
   },
-  
+
   setup() {
     const router = useRouter()
     const { user } = useAuth()
     const { currentLocale, t } = useLocale()
     return { router, user, currentLocale, t }
   },
-  
+
   data() {
     return {
       movie: null,
@@ -160,54 +153,56 @@ export default {
       isFavorited: false
     }
   },
-  
+
   computed: {
     movieId() {
       return this.$route.params.id
     }
   },
-  
+
   methods: {
     async loadMovie() {
       this.loading = true
       this.error = null
-      
+
       try {
         const language = this.currentLocale || 'hu'
-        
+
         // Try direct movie endpoint first with language parameter (use apiClient to include Authorization)
         let response = await apiClient.get(`/api/movies/${this.movieId}`, { params: { language } })
-        
+
         if (response.status === 200) {
           // Direct movie endpoint worked
           const data = response.data
           console.log('Movie API response:', data)
-          
+
           if (data.success) {
             // ApiResponse.success spreads the movie data directly into the response
             // Extract movie data from the response (everything except success and message)
             const { success, message, ...movieData } = data
             this.movie = movieData
             console.log('Loaded movie data (direct):', this.movie)
+            // Lényeges logolás a hibakereséshez
             console.log('Movie genres:', this.movie.genres, 'Type:', typeof this.movie.genres)
             await this.checkIfWatched()
             return
           }
         }
-        
+
         // Fallback to search if direct endpoint doesn't work
         console.log('Direct movie endpoint failed, trying search fallback')
         response = await apiClient.get('/api/movies/search', { params: { query: `tmdb:${this.movieId}`, language } })
-        
+
         if (response.status !== 200) {
           throw new Error('Film betöltése sikertelen')
         }
-        
+
         const data = response.data
         if (data.success && data.movies && data.movies.length > 0) {
           // Find exact match or use first result
           this.movie = data.movies.find(m => m.tmdb_id == this.movieId) || data.movies[0]
           console.log('Loaded movie data (search):', this.movie)
+          // Lényeges logolás a hibakereséshez
           console.log('Movie genres:', this.movie.genres, 'Type:', typeof this.movie.genres)
           await this.checkIfWatched()
         } else {
@@ -220,7 +215,7 @@ export default {
         this.loading = false
       }
     },
-    
+
     async checkIfWatched() {
       if (!this.user || !this.movie) {
         console.log('Cannot check watched: missing user or movie')
@@ -231,22 +226,22 @@ export default {
         console.log('No auth token set, skipping watchlist check')
         return
       }
-      
+
       try {
         // Use apiClient so token is automatically included
         const response = await apiClient.get(`/api/watchlist/${this.user.id}`)
-        
+
         console.log('Checking if watched for movie:', this.movie)
-        
+
         if (response.status === 200) {
           const data = response.data
           console.log('Watchlist response:', data)
-          
+
           // JAVÍTVA: A válasz struktúra data.watchlist, NEM data.data.watchlist
           if (data.success && data.watchlist) {
             const movieId = this.movie.tmdb_id || this.movie.id
             console.log('Looking for movieId:', movieId)
-            
+
             const watchlistItem = data.watchlist.find(item => {
               const itemMovieId = item.movie?.tmdb_id || item.movie?.id
               return itemMovieId == movieId
@@ -271,48 +266,57 @@ export default {
         }
       }
     },
+
+    // MovieDetailView.vue - toggleWatched metódus javítva
+
+async toggleWatched() {
+  if (!this.user || !this.movie) {
+    console.log('Cannot toggle watched: missing user or movie', { user: this.user, movie: this.movie })
+    return
+  }
+  if (!localStorage.getItem('authToken')) {
+    const message = this.currentLocale === 'hu' ? 'Jelentkezz be a módosításhoz.' : 'Please log in to change this.'
+    alert(message)
+    return
+  }
+
+  this.isTogglingWatched = true
+  console.log('Toggling watched. Current state:', this.isWatched)
+
+  try {
+    const movieId = this.movie.tmdb_id || this.movie.id
+    const newWatchedState = !this.isWatched
+
+    console.log('Updating watched status:', { userId: this.user.id, movieId, watched: newWatchedState })
+
+    // Use the correct endpoint for updating a single watchlist item's status
+    const response = await apiClient.patch(`/api/interactions/${this.user.id}/item`, {
+      movieId: movieId,
+      watched: newWatchedState ? 1 : 0
+    })
     
-    async toggleWatched() {
-      if (!this.user || !this.movie) {
-        console.log('Cannot toggle watched: missing user or movie', { user: this.user, movie: this.movie })
-        return
-      }
-      if (!localStorage.getItem('authToken')) {
-        const message = this.currentLocale === 'hu' ? 'Jelentkezz be a módosításhoz.' : 'Please log in to change this.'
-        alert(message)
-        return
-      }
-      
-      this.isTogglingWatched = true
-      console.log('Toggling watched. Current state:', this.isWatched)
-      
-      try {
-        const movieId = this.movie.tmdb_id || this.movie.id
-        const newWatchedState = !this.isWatched
-        
-        console.log('Updating watched status:', { userId: this.user.id, movieId, watched: newWatchedState })
-        
-        const response = await apiClient.put(`/api/watchlist/${this.user.id}/${movieId}`, { watched: newWatchedState ? 1 : 0 })
-        const data = response.data
-        console.log('Update response:', data)
-        
-        if (response.status === 200) {
-          this.isWatched = newWatchedState
-          console.log('Successfully updated watched status to:', newWatchedState)
-        } else {
-          console.error('Failed to update:', data)
-        }
-      } catch (error) {
-        console.error('Error toggling watched:', error)
-        if (error?.response?.status === 401) {
-          const message = this.currentLocale === 'hu' ? 'A módosításhoz be kell jelentkezni.' : 'You must be logged in to change this.'
-          alert(message)
-        }
-      } finally {
-        this.isTogglingWatched = false
-      }
-    },
-    
+    const data = response.data
+    console.log('Update response:', data)
+
+    this.isWatched = newWatchedState
+    console.log('Successfully updated watched status to:', newWatchedState)
+  } catch (error) {
+    console.error('Error toggling watched:', error)
+    if (error?.response?.status === 401) {
+      const message = this.currentLocale === 'hu' ? 'A módosításhoz be kell jelentkezni.' : 'You must be logged in to change this.'
+      alert(message)
+    } else {
+      // Általános hibaüzenet
+      const errorMessage = this.currentLocale === 'hu' 
+        ? 'Nem sikerült frissíteni a filmet' 
+        : 'Failed to update movie'
+      alert(errorMessage)
+    }
+  } finally {
+    this.isTogglingWatched = false
+  }
+},
+
     async deleteFromFavorites() {
       if (!this.user || !this.movie) return
       if (!this.isInWatchlist) {
@@ -325,109 +329,124 @@ export default {
         alert(message)
         return
       }
-      
-      const confirmMessage = this.currentLocale === 'hu' 
-        ? 'Biztosan törölni szeretnéd ezt a filmet a kedvencekből?' 
+
+      const confirmMessage = this.currentLocale === 'hu'
+        ? 'Biztosan törölni szeretnéd ezt a filmet a kedvencekből?'
         : 'Are you sure you want to delete this movie from your favorites?'
-      
+
       if (!confirm(confirmMessage)) {
         return
       }
-      
+
       this.isTogglingFavorite = true
-      
+
       try {
         const movieId = this.movie.tmdb_id || this.movie.id
-        const response = await apiClient.delete(`/api/interactions/${this.user.id}/${movieId}`)
-        
-        if (response.status === 200) {
-          this.isFavorited = false
-          // Navigate back to favorites list
-          this.router.push('/favorites')
-        } else {
-          throw new Error('Törlés sikertelen')
-        }
+        await apiClient.delete(`/api/interactions/${this.user.id}/${movieId}`)
+
+        // If the request is successful (doesn't throw an error), proceed with UI changes.
+        this.isFavorited = false
+        // Navigate back to favorites list
+        this.router.push('/favorites')
       } catch (error) {
         console.error('Error deleting from favorites:', error)
-        const errorMessage = this.currentLocale === 'hu' 
-          ? 'Nem sikerült törölni a filmet' 
+        const errorMessage = this.currentLocale === 'hu'
+          ? 'Nem sikerült törölni a filmet'
           : 'Failed to delete movie'
         alert(errorMessage)
       } finally {
         this.isTogglingFavorite = false
       }
     },
-    
+
     getPosterUrl(posterPath) {
       if (!posterPath) return '/placeholder-movie.jpg'
-      return posterPath.startsWith('http') 
-        ? posterPath 
+      return posterPath.startsWith('http')
+        ? posterPath
         : `https://image.tmdb.org/t/p/w500${posterPath}`
     },
-    
+
     handleImageError(event) {
       event.target.src = '/placeholder-movie.jpg'
     },
-    
+
     getYear(dateString) {
       return dateString ? new Date(dateString).getFullYear() : ''
     },
-    
+
+    /**
+     * @description Megpróbálja a műfajokat a lehető legtöbb formátumból (string, JSON string, objektum tömb, string tömb) kinyerni.
+     * @param {any} genres - A film műfaj adata.
+     * @returns {string[]} A műfajok string tömbje.
+     */
     getGenres(genres) {
       if (!genres) return []
       
-      // Ha már tömb
+      // 1. Ha már tömb
       if (Array.isArray(genres)) {
-        // Ha objektumokat tartalmaz (pl. {id: 28, name: "Action"})
+        // Ha objektumokat tartalmaz (pl. [{id: 28, name: "Action"}])
         if (genres.length > 0 && typeof genres[0] === 'object' && genres[0].name) {
           return genres.map(g => g.name)
         }
-        // Ha már stringek
-        return genres
+        // Ha már stringek (pl. ["Action", "Adventure"])
+        return genres.filter(g => g && typeof g === 'string')
       }
       
-      // Ha objektum (de nem tömb)
-      if (typeof genres === 'object') {
-        const values = Object.values(genres)
-        // Ha objektumokat tartalmaz
-        if (values.length > 0 && typeof values[0] === 'object' && values[0].name) {
-          return values.map(g => g.name)
-        }
-        // Ha stringeket tartalmaz
-        return values.filter(g => g && typeof g === 'string')
-      }
-      
-      // Ha string, próbáljuk meg parse-olni JSON-ként
+      // 2. Ha string (JSON vagy vesszővel elválasztott)
       if (typeof genres === 'string') {
         try {
           const parsed = JSON.parse(genres)
+          
           if (Array.isArray(parsed)) {
-            // Ha objektumokat tartalmaz
+            // JSON tömb: [{name: "Action"}] vagy ["Action"]
             if (parsed.length > 0 && typeof parsed[0] === 'object' && parsed[0].name) {
               return parsed.map(g => g.name)
             }
-            return parsed
+            return parsed.filter(g => g && typeof g === 'string')
           }
+          
+          // Ha egy egyszerű objektumot parse-ol (bár ez ritka a műfajoknál)
+          if (typeof parsed === 'object' && parsed !== null) {
+            // Megpróbálja kiszedni az értékeket, ha az egy kulcs-érték lista (pl. {0: "Action"})
+            const values = Object.values(parsed);
+            if (values.length > 0 && typeof values[0] === 'string') {
+                 return values.filter(g => g.length > 0);
+            }
+          }
+
           return []
         } catch {
-          // Ha nem JSON, split-eljük vesszőkkel
+          // Ha nem JSON (pl. egy vesszővel elválasztott string: "Action, Adventure")
           return genres.split(',').map(g => g.trim()).filter(g => g.length > 0)
         }
       }
       
+      // 3. Ha objektum (de nem tömb és nem string)
+      if (typeof genres === 'object' && genres !== null) {
+        const values = Object.values(genres)
+        // Ha objektumokat tartalmaz (pl. {0: {name: "Action"}})
+        if (values.length > 0 && typeof values[0] === 'object' && values[0].name) {
+          return values.map(g => g.name)
+        }
+        // Ha stringeket tartalmaz (pl. {0: "Action"})
+        return values.filter(g => g && typeof g === 'string')
+      }
+
       // Egyéb esetben üres tömb
       return []
     }
   },
-  
+
   mounted() {
     this.loadMovie()
   },
-  
+
   watch: {
-    '$route.params.movieId'() {
+    // Figyeli az útvonal paramétert változását, ha ugyanazon a komponenst használják
+    '$route.params.id'() {
       this.loadMovie()
     },
+    // Figyeli a nyelv változását, és újra betölti a filmet az új nyelvi adatokkal
     currentLocale() {
       this.loadMovie()
     }
@@ -640,50 +659,50 @@ export default {
     padding: 0.5rem;
     padding-bottom: 8rem;
   }
-  
+
   .movie-header {
     grid-template-columns: 1fr;
     gap: 0.6rem;
     padding: 0.6rem;
   }
-  
+
   .movie-poster {
     max-width: 200px;
     margin: 0 auto;
   }
-  
+
   .poster-image {
     height: auto;
     max-height: 280px;
   }
-  
+
   .movie-title {
     font-size: 1.2rem;
   }
-  
+
   .movie-subtitle {
     font-size: 0.9rem;
   }
-  
+
   .movie-meta {
     font-size: 0.8rem;
   }
-  
+
   .year, .rating, .runtime {
     padding: 0.4rem 0.8rem;
     font-size: 0.75rem;
   }
-  
+
   .genre-tag {
     font-size: 0.75rem;
     padding: 0.4rem 0.8rem;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .watched-btn,
   .delete-btn {
     padding: 0.8rem 1rem;
@@ -691,15 +710,15 @@ export default {
     width: 100%;
     justify-content: center;
   }
-  
+
   .movie-description {
     padding: 1rem;
   }
-  
+
   .movie-description h2 {
     font-size: 1.1rem;
   }
-  
+
   .movie-description p {
     font-size: 0.85rem;
   }
@@ -709,56 +728,56 @@ export default {
   .movie-content {
     padding: 0.4rem;
   }
-  
+
   .movie-header {
     padding: 0.5rem;
     gap: 0.5rem;
   }
-  
+
   .movie-poster {
     max-width: 160px;
   }
-  
+
   .poster-image {
     max-height: 240px;
   }
-  
+
   .movie-title {
     font-size: 1rem;
   }
-  
+
   .movie-subtitle {
     font-size: 0.8rem;
   }
-  
+
   .movie-meta {
     font-size: 0.75rem;
   }
-  
+
   .year, .rating, .runtime {
     padding: 0.3rem 0.6rem;
     font-size: 0.7rem;
   }
-  
+
   .genre-tag {
     font-size: 0.7rem;
     padding: 0.3rem 0.7rem;
   }
-  
+
   .watched-btn,
   .delete-btn {
     padding: 0.7rem 0.9rem;
     font-size: 0.8rem;
   }
-  
+
   .movie-description {
     padding: 0.8rem;
   }
-  
+
   .movie-description h2 {
     font-size: 1rem;
   }
-  
+
   .movie-description p {
     font-size: 0.8rem;
   }

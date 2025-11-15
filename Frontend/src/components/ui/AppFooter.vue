@@ -1,29 +1,17 @@
 <template>
   <footer class="app-footer">
     <div class="footer-content">
-      <p class="copyright">
-        {{ $t('footer.copyright', { year: currentYear, name: '' }) }}
-      </p>
-      <div class="footer-links">
-        <span class="version">{{ $t('footer.version') }}{{ appVersion }}</span>
-      </div>
+      <p class="copyright">Property of me - v{{ appVersion }}</p>
     </div>
   </footer>
 </template>
 
-<script>
-export default {
-  name: 'AppFooter',
-  computed: {
-    currentYear() {
-      return new Date().getFullYear()
-    },
-    appVersion() {
-      // Globális változón keresztül olvassuk a verziót
-      return __APP_VERSION__ || '1.0.0'
-    }
-  }
-}
+<script setup>
+import { computed } from 'vue';
+
+// Get app version from environment variables (set in vite.config.js)
+// This is the standard and safe way to expose build-time info in Vite.
+const appVersion = computed(() => import.meta.env.VITE_APP_VERSION || '1.0.0');
 </script>
 
 <style scoped>
@@ -82,4 +70,3 @@ export default {
   }
 }
 </style>
-

@@ -46,6 +46,14 @@ function createInteractionRouter(models) {
     }
   );
 
+  // PATCH /api/interactions/:userId/item - Update a watchlist item (e.g., watched status)
+  router.patch('/:userId/item',
+    // auth.authenticateToken, // Consider re-enabling authentication
+    async (req, res) => {
+      await interactionController.updateWatchlistItem(req, res);
+    }
+  );
+
   return router;
 }
 

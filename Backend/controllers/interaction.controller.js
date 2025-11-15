@@ -296,104 +296,149 @@ class InteractionController {
    */
   // GET /api/interactions/:userId - Felhasználó összes interakciója
   async getUserInteractions(req, res) {
-    try {
-      const { userId } = req.params;
-      const { page = 1, limit = 20, interactionType, language = 'en' } = req.query;
+  try {
+    const { userId } = req.params;
+    const { page = 1, limit = 20, interactionType, language = 'en' } = req.query;
 
-      console.log('Getting user interactions for userId:', userId);
-      console.log('Query params:', { page, limit, interactionType, language });
+    console.log('Getting user interactions for userId:', userId);
+    console.log('Query params:', { page, limit, interactionType, language });
 
-      // Szűrési feltételek
-      const whereClause = { user_id: userId };
-      
-      if (interactionType && ['LIKE', 'DISLIKE'].includes(interactionType)) {
-        whereClause.interaction_type = interactionType;
-      }
+    const whereClause = { user_id: userId };
+    
+    if (interactionType && ['LIKE', 'DISLIKE'].includes(interactionType)) {
+      whereClause.interaction_type = interactionType;
+    }
 
-      console.log('Where clause:', whereClause);
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 20;
+    const offset = (pageNum - 1) * limitNum;
 
-      // Paginálás számítása
-      const offset = (page - 1) * limit;
-
-      console.log('Executing findAndCountAll query...');
-      const { count, rows: interactions } = await this.UserMovieInteraction.findAndCountAll({
-        where: whereClause,
+    const { count, rows: interactions } = await this.UserMovieInteraction.findAndCountAll({
+      where: whereClause,
+      include: [{
+        model: this.Movie,
+        as: 'movie',
+        attributes: ['id', 'tmdb_id', 'title', 'poster_path', 'release_date', 'tmdb_rating', 'genres', 'poster_url', 'overview'],
         include: [{
-          model: this.Movie,
-          as: 'movie',
-          attributes: ['id', 'tmdb_id', 'title', 'poster_path', 'release_date', 'tmdb_rating', 'genres']
-        }],
-        order: [['created_at', 'DESC']],
-        limit: parseInt(limit),
-        offset: parseInt(offset)
-      });
+          model: this.UserWatchlist,
+          as: 'watchlistEntries',
+          attributes: ['watched'],
+          where: { user_id: userId },
+          required: false
+        }]
+      }], 
+      attributes: [
+        'id',
+        'user_id',
+        'movie_id',
+        'interaction_type',
+        'created_at'
+      ],
+      order: [['created_at', 'DESC']],
+      limit: limitNum,
+      offset: offset
+    });
 
-      console.log('Query completed. Count:', count, 'Rows found:', interactions.length);
+    // Fetch and update movie details from TMDB in the requested language
+    const processedInteractions = await Promise.all(interactions.map(async (interaction) => {
+      let interactionData = interaction.toJSON();
 
-      // Fetch movie details from TMDB in requested language
-      const processedInteractions = await Promise.all(interactions.map(async interaction => {
-        const interactionData = interaction.toJSON();
-        
-        if (interactionData.movie && interactionData.movie.tmdb_id) {
-          try {
-            // Fetch movie details from TMDB with language parameter
-            const tmdbResponse = await fetch(
-              `${this.tmdbBaseUrl}/movie/${interactionData.movie.tmdb_id}?api_key=${this.tmdbApiKey}&language=${language}`
-            );
-            
-            if (tmdbResponse.ok) {
-              const tmdbData = await tmdbResponse.json();
-              
-              // Update movie data with localized version
-              interactionData.movie.title = tmdbData.title || interactionData.movie.title;
-              interactionData.movie.poster_path = tmdbData.poster_path || interactionData.movie.poster_path;
-              interactionData.movie.poster_url = tmdbData.poster_path 
-                ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}`
-                : null;
-              interactionData.movie.genres = tmdbData.genres || interactionData.movie.genres;
-            } else {
-              // Fallback to database data with constructed poster URL
-              if (interactionData.movie.poster_path) {
-                interactionData.movie.poster_url = `https://image.tmdb.org/t/p/w500${interactionData.movie.poster_path}`;
+      if (interactionData.movie) {
+        try {
+          // Fetch fresh data from TMDB with the requested language
+          const tmdbResponse = await axios.get(`${this.tmdbBaseUrl}/movie/${interactionData.movie.tmdb_id}`, {
+            params: {
+              api_key: this.tmdbApiKey,
+              language: language
+            }
+          });
+          const tmdbMovie = tmdbResponse.data;
+
+          // Update movie data in the response with translated content
+          interactionData.movie.title = tmdbMovie.title;
+          interactionData.movie.overview = tmdbMovie.overview;
+          
+          // *** FIX: Process genres correctly ***
+          interactionData.movie.genres = tmdbMovie.genres ? tmdbMovie.genres.map(g => g.name) : [];
+          
+          // Update poster
+          if (tmdbMovie.poster_path) {
+            interactionData.movie.poster_path = tmdbMovie.poster_path;
+            interactionData.movie.poster_url = `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}`;
+          }
+
+        } catch (tmdbError) {
+          console.error(`Failed to fetch TMDB data for movie ${interactionData.movie.tmdb_id} in language ${language}:`, tmdbError.message);
+          
+          // *** KRITIKUS FIX: Fallback genres parsing ***
+          if (interactionData.movie.genres) {
+            if (typeof interactionData.movie.genres === 'string') {
+              try {
+                const parsed = JSON.parse(interactionData.movie.genres);
+                // Ha objektum tömb [{name: "Action"}]
+                if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'object' && parsed[0].name) {
+                  interactionData.movie.genres = parsed.map(g => g.name);
+                }
+                // Ha string tömb ["Action", "Adventure"]
+                else if (Array.isArray(parsed)) {
+                  interactionData.movie.genres = parsed;
+                }
+                // Ha nem tömb, üres tömb
+                else {
+                  interactionData.movie.genres = [];
+                }
+              } catch (parseError) {
+                console.error('Failed to parse genres:', parseError);
+                interactionData.movie.genres = [];
               }
             }
-          } catch (tmdbError) {
-            console.error('Error fetching TMDB data for movie:', interactionData.movie.tmdb_id, tmdbError);
-            // Fallback to database data
-            if (interactionData.movie.poster_path) {
-              interactionData.movie.poster_url = `https://image.tmdb.org/t/p/w500${interactionData.movie.poster_path}`;
+            // Ha már tömb, hagyjuk
+            else if (!Array.isArray(interactionData.movie.genres)) {
+              interactionData.movie.genres = [];
             }
+          } else {
+            interactionData.movie.genres = [];
+          }
+          
+          // Ensure poster_url is set even in fallback
+          if (interactionData.movie.poster_path && !interactionData.movie.poster_url) {
+            interactionData.movie.poster_url = `https://image.tmdb.org/t/p/w500${interactionData.movie.poster_path}`;
           }
         }
-        
-        return interactionData;
-      }));
+      }
 
-      console.log('Processed interactions:', processedInteractions.length);
+      // Add watched status from watchlist entries
+      if (interactionData.movie && interactionData.movie.watchlistEntries && interactionData.movie.watchlistEntries.length > 0) {
+        interactionData.movie.watched = interactionData.movie.watchlistEntries[0].watched;
+      } else if (interactionData.movie) {
+        interactionData.movie.watched = false;
+      }
 
-      return ApiResponse.success(res, 'user.success.interactions_retrieved', {
-        data: {
-          interactions: processedInteractions,
-          pagination: {
-            currentPage: parseInt(page),
-            totalPages: Math.ceil(count / limit),
-            totalItems: count,
-            itemsPerPage: parseInt(limit)
-          }
+      return interactionData;
+    }));
+
+    return ApiResponse.success(res, 'user.success.interactions_retrieved', {
+      data: {
+        interactions: processedInteractions,
+        pagination: {
+          currentPage: pageNum,
+          totalPages: Math.ceil(count / limitNum),
+          totalItems: count,
+          itemsPerPage: limitNum
         }
-      });
+      }
+    });
 
-    } catch (error) {
-      console.error('Error getting user interactions:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
-      return ApiResponse.serverError(res, error);
-    }
+  } catch (error) {
+    console.error('Error getting user interactions:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    return ApiResponse.serverError(res, error);
   }
-
+}
   /**
    * Calculate user interaction statistics including like/dislike ratios
    * Provides total counts, recent activity (last 7 days), and like percentage
@@ -608,6 +653,75 @@ class InteractionController {
     }
   }
 
+  /**
+   * Update a watchlist item, specifically the 'watched' status.
+   * If the item doesn't exist, it creates it.
+   * 
+   * @param {Object} req - Express request object
+   * @param {string} req.params.userId - User ID from the route
+   * @param {string} req.body.movieId - TMDB movie ID
+   * @param {boolean|number} req.body.watched - The new watched status (true/1 or false/0)
+   * @param {Object} res - Express response object
+   * @returns {Promise<void>} JSON response confirming the update
+   */
+  async updateWatchlistItem(req, res) {
+    const { userId } = req.params;
+    const { movieId, watched } = req.body;
+
+    if (!movieId || watched === undefined) {
+      return ApiResponse.error(res, 'movieId and watched status are required', 400);
+    }
+
+    const transaction = await this.UserWatchlist.sequelize.transaction();
+
+    try {
+      // Find the internal movie record by TMDB ID
+      let movie = await this.Movie.findOne({
+        where: { tmdb_id: movieId },
+        transaction
+      });
+
+      // If movie doesn't exist in our DB, create it
+      if (!movie) {
+        try {
+          movie = await this.createMovieFromTmdb(movieId, transaction);
+        } catch (tmdbError) {
+          await transaction.rollback();
+          console.error('Error creating movie from TMDB during watchlist update:', tmdbError);
+          return ApiResponse.error(res, 'Movie not found and could not be created', 404);
+        }
+      }
+
+      // Find or create the watchlist item
+      const [watchlistItem, created] = await this.UserWatchlist.findOrCreate({
+        where: {
+          user_id: userId,
+          movie_id: movie.id
+        },
+        defaults: {
+          user_id: userId,
+          movie_id: movie.id,
+          watched: !!watched, // Convert to boolean
+          added_at: new Date()
+        },
+        transaction
+      });
+
+      // If the item already existed, update its 'watched' status
+      if (!created) {
+        watchlistItem.watched = !!watched;
+        await watchlistItem.save({ transaction });
+      }
+
+      await transaction.commit();
+      return ApiResponse.success(res, 'Watchlist item updated successfully', { watchlistItem });
+    } catch (error) {
+      await transaction.rollback();
+      console.error('Error updating watchlist item:', error);
+      return ApiResponse.serverError(res, error);
+    }
+  }
+
   // Helper metódusok
 
   /**
@@ -733,4 +847,10 @@ class InteractionController {
   }
 }
 
+/**
+ * This is a temporary fix. You should create a new router file for watchlist
+ * and add the new route there. For now, I'm adding the method to the controller.
+ * You need to add `router.patch('/:userId/item', (req, res) => controller.updateWatchlistItem(req, res));`
+ * to your `interactions` router file.
+ */
 module.exports = InteractionController;

@@ -8,7 +8,9 @@ export default {
       emptyMessage: 'Kezdj el filmeket böngészni és jelöld meg a kedvenceidet!',
       startBrowsing: 'Filmek böngészése',
       errorTitle: 'Hiba történt',
-      loadError: 'Hiba történt a kedvelt filmek betöltése közben.'
+      loadError: 'Hiba történt a kedvelt filmek betöltése közben.',
+      seen: 'Láttam',
+      notSeen: 'Nem láttam'
     }
   },
   en: {
@@ -20,7 +22,9 @@ export default {
       emptyMessage: 'Start browsing movies and mark your favorites!',
       startBrowsing: 'Browse Movies',
       errorTitle: 'An error occurred',
-      loadError: 'An error occurred while loading your favorite movies.'
+      loadError: 'An error occurred while loading your favorite movies.',
+      seen: 'Seen',
+      notSeen: 'Not Seen'
     }
   }
 }
