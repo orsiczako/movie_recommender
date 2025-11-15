@@ -5,12 +5,15 @@ function createSoundtrackRouter() {
   const router = express.Router();
   const soundtrackController = new SoundtrackController();
 
-  // GET /api/soundtrack/:movieTitle - Get movie soundtrack from Spotify
-  router.get('/:movieTitle',
-    async (req, res) => {
-      await soundtrackController.getMovieSoundtrack(req, res);
-    }
-  );
+  // Support both query-based: GET /api/soundtrack?originalTitle=...&movieYear=...
+  // and path-based:   GET /api/soundtrack/:movieTitle
+  router.get('/', async (req, res) => {
+    await soundtrackController.getMovieSoundtrack(req, res);
+  });
+
+  router.get('/:movieTitle', async (req, res) => {
+    await soundtrackController.getMovieSoundtrack(req, res);
+  });
 
   return router;
 }

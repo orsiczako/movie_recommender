@@ -985,6 +985,27 @@ class MovieController {
         // *** FIX: Overwrite the genres from the converter with the correct, full genre objects from the API response. ***
         movieData.genres = response.data.genres;
 
+        // Ensure original_title is returned (TMDB provides this field and it's needed by frontend)
+        movieData.original_title = response.data.original_title || movieData.title;
+
+        // ALSO: fetch English details to ensure we have the true original (English) title
+        try {
+          if ((language || 'en') !== 'en') {
+            const enResp = await axios.get(`${this.tmdbBaseUrl}/movie/${movieId}`, {
+              params: { api_key: this.tmdbApiKey, language: 'en' }
+            });
+            if (enResp.data && enResp.data.original_title) {
+              movieData.original_title_en = enResp.data.original_title;
+              console.log(`Fetched English original_title for ${movieId}:`, movieData.original_title_en);
+            }
+          } else {
+            movieData.original_title_en = movieData.original_title;
+          }
+        } catch (err) {
+          console.warn('Failed to fetch English original_title:', err.message);
+          movieData.original_title_en = movieData.original_title;
+        }
+
         // Add additional details
         movieData.credits = response.data.credits;
         movieData.videos = response.data.videos?.results || [];

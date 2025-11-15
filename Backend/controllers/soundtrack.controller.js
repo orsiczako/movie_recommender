@@ -44,7 +44,6 @@ class SoundtrackController {
     }
   }
 
-  // 🔹 Karakter-normalizálás + pontozás barát
   prepareTitle(str) {
     return String(str || '')
       .normalize('NFD')
@@ -56,7 +55,6 @@ class SoundtrackController {
       .toLowerCase();
   }
 
-  // 🔹 Alternatív címek (eredeti/angol)
   getAlternativeTitles(title) {
     const alternatives = [];
     const cleaned = this.prepareTitle(title);
@@ -93,9 +91,7 @@ class SoundtrackController {
     ];
   }
 
-  // -----------------------------
-  // 🔹 Pontozás: mindig a legjobb találatot adja
-  // -----------------------------
+
   scoreAlbum(albumName, movieTitle) {
     // JAVÍTÁS 3: Szigorúbb pontozás a pontos címért (pl. "Your Name" vs "Call Me By Your Name")
     const nameNorm = this.prepareTitle(albumName);
@@ -137,9 +133,7 @@ class SoundtrackController {
     return score;
   }
 
-  // -----------------------------
-  // 🔹 Fő keresési logika – hierarchikus fallback
-  // -----------------------------
+
   async searchSoundtrackPlaylists(movieTitle) {
     console.log('searchSoundtrackPlaylists called with:', movieTitle);
     const token = await this.getSpotifyAccessToken();
@@ -294,77 +288,80 @@ class SoundtrackController {
     }
   }
 
-  // API endpoint
-  async getMovieSoundtrack(req, res) {
-    try {
-      const { movieTitle } = req.params;
-      const { movieYear } = req.query;
-      if (!movieTitle) return res.status(400).json({ success: false, message: 'Movie title is required' });
+    // API endpoint
+    async getMovieSoundtrack(req, res) {
+        try {
+            const { movieTitle } = req.params;
+            const { originalTitle, movieYear } = req.query;
 
-      console.log('Fetching soundtrack for movie title:', movieTitle);
-      if (movieYear) {
-        console.log('Filtering tracks by movie year:', movieYear);
-      } else {
-        console.log('No movie year provided, skipping year filtering.');
-      }
+            // Prefer explicit originalTitle query param, fall back to path param movieTitle
+            const searchTitle = (originalTitle && originalTitle.trim() !== '')
+                ? originalTitle.trim()
+                : (movieTitle && movieTitle.trim() !== '' ? movieTitle.trim() : null);
 
-      const results = await this.searchSoundtrackPlaylists(movieTitle);
+            if (!searchTitle) {
+                return res.status(400).json({ success: false, message: 'originalTitle query param or :movieTitle path param is required' });
+            }
 
-      let best = null;
-      if (results && results.length > 0) {
-        best = results[0]; 
-        console.log('Best result selected:', best.name, `(isAlbum: ${best.isAlbum})`);
-      } else {
-        console.error('No valid results found to select the best soundtrack.');
-        return res.status(404).json({
-          success: false,
-          message: `No soundtrack found for "${movieTitle}"`,
-          data: []
-        });
-      }
+            console.log('Fetching soundtrack for search title:', searchTitle);
+            if (movieYear) console.log('Filtering tracks by movie year:', movieYear);
 
-      let tracks = await this.getPlaylistTracks(best.id, best.isAlbum, best.isAlbum ? best.album : null);
-      console.log('Tracks fetched for best result:', tracks.length);
+            const results = await this.searchSoundtrackPlaylists(searchTitle);
 
-      if (movieYear && tracks.length > 0) {
-        const y = parseInt(movieYear);
-        const originalTrackCount = tracks.length;
-        tracks = tracks.filter(t => !t.year || t.year <= y);
-        console.log(`Tracks filtered by movie year (${y}): ${tracks.length} / ${originalTrackCount}`);
-      }
+            if (!results || results.length === 0) {
+                console.error('No valid results found to select the best soundtrack.');
+                return res.status(404).json({
+                    success: false,
+                    message: `No soundtrack found for "${searchTitle}"`,
+                    data: []
+                });
+            }
 
-      if (movieYear && tracks.length === 0) {
-        console.log('No tracks passed the movie year filter. Falling back to the first three results (pre-filter).');
-        let originalTracks = await this.getPlaylistTracks(best.id, best.isAlbum, best.isAlbum ? best.album : null);
-        tracks = originalTracks.slice(0, 3); 
-        console.log('Fallback tracks:', tracks.length);
-      }
+            const best = results[0];
+            console.log('Best result selected:', best.name, `(isAlbum: ${best.isAlbum})`);
 
-      if (tracks.length === 0) {
-        console.warn(`No tracks found for ID ${best.id}. Returning 404.`);
-        return res.status(404).json({
-          success: false,
-          message: `Found playlist "${best.name}", but failed to fetch tracks.`,
-          data: []
-        });
-      }
+            let tracks = await this.getPlaylistTracks(best.id, best.isAlbum, best.isAlbum ? best.album : null);
+            console.log('Tracks fetched for best result:', tracks.length);
 
-      return res.json({
-        success: true,
-        data: {
-          description: `Soundtrack from Spotify: ${best.name}`,
-          songs: tracks,
-          source: 'spotify',
-          playlistUrl: best.external_urls?.spotify || null,
-          playlistName: best.name
-        }
-      });
-    } catch (error) {
-      console.error('Soundtrack error:', error);
-      // JAVÍTÁS 2: A felesleges 'section' szó eltávolítva innen, ami ReferenceError-t okozott.
-      return res.status(500).json({ success: false, message: 'Failed to get movie soundtrack', error: error.message });
-    }
-  }
+            if (movieYear && tracks.length > 0) {
+                const y = parseInt(movieYear);
+                const originalTrackCount = tracks.length;
+                tracks = tracks.filter(t => !t.year || t.year <= y);
+                console.log(`Tracks filtered by movie year (${y}): ${tracks.length} / ${originalTrackCount}`);
+            }
+
+            if (movieYear && tracks.length === 0) {
+                console.log('No tracks passed the movie year filter. Falling back to the first three results (pre-filter).');
+                const originalTracks = await this.getPlaylistTracks(best.id, best.isAlbum, best.isAlbum ? best.album : null);
+                tracks = originalTracks.slice(0, 3);
+                console.log('Fallback tracks:', tracks.length);
+            }
+
+            if (tracks.length === 0) {
+                console.warn(`No tracks found for ID ${best.id}. Returning 404.`);
+                return res.status(404).json({
+                    success: false,
+                    message: `Found playlist "${best.name}", but failed to fetch tracks.`,
+                    data: []
+                });
+            }
+
+            // Return a stable shape expected by frontend
+            return res.json({
+                success: true,
+                data: {
+                    description: `Soundtrack from Spotify: ${best.name}`,
+                    songs: tracks,
+                    source: 'spotify',
+                    playlistUrl: best.external_urls?.spotify || null,
+                    playlistName: best.name
+                }
+            });
+        } catch (error) {
+            console.error('Soundtrack error:', error);
+            return res.status(500).json({ success: false, message: 'Failed to get movie soundtrack', error: error.message });
+        }
+    }
 }
 
 module.exports = SoundtrackController;

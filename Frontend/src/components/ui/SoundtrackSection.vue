@@ -65,6 +65,10 @@ export default {
   },
   
   props: {
+    originalTitle: {
+      type: String,
+      default: null
+    },
     movieTitle: {
       type: String,
       required: true
@@ -91,6 +95,7 @@ export default {
       tracks: [],
       soundtrackDescription: '',
       playlistUrl: null
+      ,lastSearchTitle: null
     }
   },
   
@@ -141,13 +146,18 @@ export default {
   },
   
   mounted() {
-    // Auto-load soundtrack if enabled
+    // Auto-load soundtrack if enabled. If originalTitle is not yet available,
+    // we still attempt load but will re-run when originalTitle arrives.
     if (this.autoLoad) {
       this.loadSoundtrack()
     }
   },
   
   methods: {
+    normalizeString(str) {
+      if (!str) return str
+      return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+    },
     async loadSoundtrack() {
       this.loading = true
       this.isLoading = true
@@ -160,43 +170,53 @@ export default {
         // Get soundtrack from backend Spotify API
         console.log(`Getting soundtrack for: ${this.movieTitle} (${this.movieYear})`)
         
-        const params = {}
-        if (this.movieYear) {
-          params.movieYear = this.movieYear
+        // Prefer sending the original (English) title as a query param when available
+        const rawTitle = (this.originalTitle && this.originalTitle.trim() !== '') ? this.originalTitle : this.movieTitle
+        const searchTitle = this.normalizeString(rawTitle)
+        console.log('Soundtrack request - originalTitle prop:', this.originalTitle, 'movieTitle prop:', this.movieTitle)
+        console.log('Soundtrack request - normalized searchTitle:', searchTitle, 'movieYear:', this.movieYear)
+
+        const params = { originalTitle: searchTitle }
+        if (this.movieYear) params.movieYear = this.movieYear
+
+        // Avoid duplicate searches for the same title
+        if (this.lastSearchTitle && this.lastSearchTitle === searchTitle) {
+          console.log('SoundtrackSection: same searchTitle as last time, skipping duplicate request')
+        } else {
+          this.lastSearchTitle = searchTitle
+          const response = await api.get(`/api/soundtrack`, { params })
+
+          if (!response.data.success) {
+            throw new Error(response.data.message || 'Failed to get soundtrack')
+          }
+
+          const soundtrackData = response.data.data
+
+          if (!soundtrackData.songs || soundtrackData.songs.length === 0) {
+            throw new Error(this.$t('soundtrack.errors.noSoundtrack'))
+          }
+
+          console.log(`Backend returned ${soundtrackData.songs.length} songs from Spotify`)
+          console.log('First song data:', soundtrackData.songs[0])
+
+          // Set description and playlist URL
+          this.soundtrackDescription = soundtrackData.description
+          this.playlistUrl = soundtrackData.playlistUrl
+
+          // Map songs to track format
+          this.tracks = soundtrackData.songs.map(song => ({
+            title: song.title,
+            artist: song.artist,
+            album: song.album,
+            year: song.year,
+            spotifyUrl: song.spotifyUrl,
+            previewUrl: song.previewUrl,
+            albumCover: song.albumCover,
+            duration: song.duration,
+            loading: false,
+            error: null
+          }))
         }
-        
-        const response = await api.get(`/api/soundtrack/${encodeURIComponent(this.movieTitle)}`, { params })
-        
-        if (!response.data.success) {
-          throw new Error(response.data.message || 'Failed to get soundtrack')
-        }
-        
-        const soundtrackData = response.data.data
-        
-        if (!soundtrackData.songs || soundtrackData.songs.length === 0) {
-          throw new Error(this.$t('soundtrack.errors.noSoundtrack'))
-        }
-        
-        console.log(`Backend returned ${soundtrackData.songs.length} songs from Spotify`)
-        console.log('First song data:', soundtrackData.songs[0])
-        
-        // Set description and playlist URL
-        this.soundtrackDescription = soundtrackData.description
-        this.playlistUrl = soundtrackData.playlistUrl
-        
-        // Map songs to track format
-        this.tracks = soundtrackData.songs.map(song => ({
-          title: song.title,
-          artist: song.artist,
-          album: song.album,
-          year: song.year,
-          spotifyUrl: song.spotifyUrl,
-          previewUrl: song.previewUrl,
-          albumCover: song.albumCover,
-          duration: song.duration,
-          loading: false,
-          error: null
-        }))
         
       } catch (error) {
         console.error('Error loading soundtrack:', error)
@@ -211,6 +231,15 @@ export default {
   
   beforeUnmount() {
     // No cleanup needed
+  }
+  ,
+  watch: {
+    originalTitle(newVal) {
+      if (this.autoLoad && newVal && !this.loading && this.tracks.length === 0) {
+        console.log('originalTitle prop updated, reloading soundtrack with:', newVal)
+        this.loadSoundtrack()
+      }
+    }
   }
 }
 </script>
