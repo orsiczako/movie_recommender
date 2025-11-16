@@ -142,7 +142,7 @@ Feladatai: Frontend-backend kommunikáció biztosítása, külső API-k integrá
 ## 8. Architekturális terv
 
 **Backend:**
-A rendszerhez szükség van egy adatbázis szerverre, ebben az esetben MySQL-t használunk. A kliens oldali programokat egy Node.js alapú REST API szolgálja ki, ez csatlakozik az adatbázis szerverhez Sequelize ORM segítségével. A kliensekkel JSON objektumokkal kommunikál. A backend Express.js keretrendszert használ a HTTP kérések kezelésére és strukturált API végpontokat biztosít. A TMDB külső API integráció biztosítja a filmadatok automatikus betöltését.
+A rendszerhez szükség van egy adatbázis szerverre, ebben az esetben PoostgreSQL-t használunk. A kliens oldali programokat egy Node.js alapú REST API szolgálja ki, ez csatlakozik az adatbázis szerverhez Sequelize ORM segítségével. A kliensekkel JSON objektumokkal kommunikál. A backend Express.js keretrendszert használ a HTTP kérések kezelésére és strukturált API végpontokat biztosít. A TMDB külső API integráció biztosítja a filmadatok automatikus betöltését.
 
 **Web Kliens:**
 A web alkalmazás Vue.js 3 keretrendszer használatával készül el, modern komponens alapú architektúrával. A REST API-hoz a felhasználó belépését követően JWT token segítségével lehet hozzáférni, ez biztosítja, hogy illetéktelen felhasználók ne módosíthassák az adatokat. A frontend reszponzív design-nal rendelkezik és Vite build eszközt használ a fejlesztéshez és telepítéshez.
@@ -171,7 +171,7 @@ A Vue.js komponensek felhasználják a backend részen futó REST szolgáltatás
 A backend Node.js és Express.js technológiákkal készül, RESTful API elveket követve. Sequelize ORM biztosítja az adatbázis kommunikációt típusbiztos módon. A JWT token alapú hitelesítés biztosítja a biztonságos API hozzáférést.
 
 **Adatbázis:**
-MySQL relációs adatbázis a normalizált adatszerkezettel, foreign key kapcsolatokkal az adatintegritás biztosítására. Az indexelés optimalizálja a lekérdezési teljesítményt.
+PostgreSQL relációs adatbázis a normalizált adatszerkezettel, foreign key kapcsolatokkal az adatintegritás biztosítására. Az indexelés optimalizálja a lekérdezési teljesítményt.
 
 
 

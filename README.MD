@@ -20,7 +20,7 @@ This project is a full-stack movie recommendation system that allows users to di
 
 ### Backend
 - **Node.js** with Express.js framework
-- **MariaDB** database with Sequelize ORM
+- **PostgreSQL** database with Sequelize ORM
 - **bcrypt** for secure password hashing
 - **SMTP** email integration for password recovery
 
@@ -54,7 +54,7 @@ This project is a full-stack movie recommendation system that allows users to di
    ```
 
 3. **Database Setup**
-   - Create MariaDB database
+   - Create PostgreSQL database
    - Run the provided SQL setup script
    - Configure database connection in environment variables
 
