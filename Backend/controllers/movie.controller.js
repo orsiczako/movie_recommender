@@ -994,9 +994,11 @@ class MovieController {
             const enResp = await axios.get(`${this.tmdbBaseUrl}/movie/${movieId}`, {
               params: { api_key: this.tmdbApiKey, language: 'en' }
             });
-            if (enResp.data && enResp.data.original_title) {
-              movieData.original_title_en = enResp.data.original_title;
-              console.log(`Fetched English original_title for ${movieId}:`, movieData.original_title_en);
+            if (enResp.data) {
+              // Use the English localized `title` when available (TMDB returns localized `title`),
+              // fall back to `original_title` if `title` is not informative.
+              movieData.original_title_en = enResp.data.title || enResp.data.original_title || movieData.original_title;
+              console.log(`Fetched English title for ${movieId}:`, movieData.original_title_en);
             }
           } else {
             movieData.original_title_en = movieData.original_title;

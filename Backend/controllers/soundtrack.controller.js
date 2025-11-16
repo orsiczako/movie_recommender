@@ -1,5 +1,14 @@
 const axios = require('axios');
 
+// Make transliteration optional: if the package isn't installed the server won't crash.
+let transliterate = (s) => s;
+try {
+    const tmod = require('transliteration');
+    transliterate = tmod.transliterate || tmod.default || tmod;
+} catch (err) {
+    console.warn('Optional module "transliteration" not available — skipping transliteration.');
+}
+
 class SoundtrackController {
   constructor() {
     this.spotifyClientId = process.env.SPOTIFY_CLIENT_ID;
@@ -292,33 +301,78 @@ class SoundtrackController {
     async getMovieSoundtrack(req, res) {
         try {
             const { movieTitle } = req.params;
-            const { originalTitle, movieYear } = req.query;
+            const { originalTitle, englishTitle, movieYear } = req.query;
 
-            // Prefer explicit originalTitle query param, fall back to path param movieTitle
-            const searchTitle = (originalTitle && originalTitle.trim() !== '')
-                ? originalTitle.trim()
-                : (movieTitle && movieTitle.trim() !== '' ? movieTitle.trim() : null);
+            // Build candidate search titles in priority. Prefer originalTitle only if it normalizes
+            // to a usable (Latin/ASCII) string; otherwise try movieTitle/englishTitle first
+            // and keep the original as a fallback. This avoids empty/invalid Spotify queries
+            // for non-Latin originals (e.g. Japanese titles like 君の名は。).
+            const rawCandidates = [];
+            if (originalTitle && originalTitle.trim() !== '') rawCandidates.push(originalTitle.trim());
+            if (movieTitle && movieTitle.trim() !== '') rawCandidates.push(movieTitle.trim());
+            if (englishTitle && englishTitle.trim() !== '') rawCandidates.push(englishTitle.trim());
 
-            if (!searchTitle) {
+            const candidates = [];
+            // Determine if originalTitle is usable after normalization
+            let originalWasDeprioritized = false;
+            if (originalTitle && originalTitle.trim() !== '') {
+                const prep = this.prepareTitle(originalTitle);
+                if (prep && /[a-z0-9]/i.test(prep)) {
+                    candidates.push(originalTitle.trim());
+                } else {
+                    console.log('Original title normalizes to non-Latin/empty string — deprioritizing original title for initial search.');
+                    originalWasDeprioritized = true;
+                }
+            }
+
+            if (movieTitle && movieTitle.trim() !== '' && !candidates.includes(movieTitle.trim())) candidates.push(movieTitle.trim());
+            if (englishTitle && englishTitle.trim() !== '' && !candidates.includes(englishTitle.trim())) candidates.push(englishTitle.trim());
+
+            // If original was deprioritized earlier, attempt transliteration (Romaji) as a better fallback
+            if (originalWasDeprioritized && originalTitle && originalTitle.trim() !== '') {
+                try {
+                    const translit = transliterate(originalTitle.trim());
+                    const translitPrep = this.prepareTitle(translit);
+                    if (translitPrep && /[a-z0-9]/i.test(translitPrep) && !candidates.includes(translit)) {
+                        console.log('Trying transliterated original title as candidate:', translit);
+                        candidates.push(translit);
+                    }
+                } catch (e) {
+                    console.warn('Transliteration failed, will fall back to original title as last resort:', e.message);
+                }
+
+                if (!candidates.includes(originalTitle.trim())) {
+                    candidates.push(originalTitle.trim());
+                }
+            }
+
+            if (candidates.length === 0) {
                 return res.status(400).json({ success: false, message: 'originalTitle query param or :movieTitle path param is required' });
             }
 
-            console.log('Fetching soundtrack for search title:', searchTitle);
-            if (movieYear) console.log('Filtering tracks by movie year:', movieYear);
+            let results = [];
+            let usedCandidate = null;
+            // Try candidates in order until we find results
+            for (const cand of candidates) {
+                console.log('Trying soundtrack search with candidate:', cand);
+                results = await this.searchSoundtrackPlaylists(cand);
+                if (results && results.length > 0) {
+                    usedCandidate = cand;
+                    break;
+                }
+            }
 
-            const results = await this.searchSoundtrackPlaylists(searchTitle);
-
-            if (!results || results.length === 0) {
-                console.error('No valid results found to select the best soundtrack.');
+            if (!usedCandidate) {
+                console.error('No valid results found for any candidate titles.');
                 return res.status(404).json({
                     success: false,
-                    message: `No soundtrack found for "${searchTitle}"`,
+                    message: `No soundtrack found for provided titles`,
                     data: []
                 });
             }
 
             const best = results[0];
-            console.log('Best result selected:', best.name, `(isAlbum: ${best.isAlbum})`);
+            console.log('Best result selected (from candidate', usedCandidate + '):', best.name, `(isAlbum: ${best.isAlbum})`);
 
             let tracks = await this.getPlaylistTracks(best.id, best.isAlbum, best.isAlbum ? best.album : null);
             console.log('Tracks fetched for best result:', tracks.length);

@@ -69,6 +69,10 @@ export default {
       type: String,
       default: null
     },
+    englishTitle: {
+      type: String,
+      default: null
+    },
     movieTitle: {
       type: String,
       required: true
@@ -171,19 +175,23 @@ export default {
         console.log(`Getting soundtrack for: ${this.movieTitle} (${this.movieYear})`)
         
         // Prefer sending the original (English) title as a query param when available
-        const rawTitle = (this.originalTitle && this.originalTitle.trim() !== '') ? this.originalTitle : this.movieTitle
-        const searchTitle = this.normalizeString(rawTitle)
-        console.log('Soundtrack request - originalTitle prop:', this.originalTitle, 'movieTitle prop:', this.movieTitle)
-        console.log('Soundtrack request - normalized searchTitle:', searchTitle, 'movieYear:', this.movieYear)
+        const rawOriginal = (this.originalTitle && this.originalTitle.trim() !== '') ? this.originalTitle : this.movieTitle
+        const rawEnglish = (this.englishTitle && this.englishTitle.trim() !== '') ? this.englishTitle : null
+        const normOriginal = this.normalizeString(rawOriginal)
+        const normEnglish = rawEnglish ? this.normalizeString(rawEnglish) : null
+        console.log('Soundtrack request - originalTitle prop:', rawOriginal, 'englishTitle prop:', rawEnglish)
+        console.log('Soundtrack request - normalized original:', normOriginal, 'normalized english:', normEnglish, 'movieYear:', this.movieYear)
 
-        const params = { originalTitle: searchTitle }
+        const params = { originalTitle: normOriginal }
+        if (normEnglish) params.englishTitle = normEnglish
         if (this.movieYear) params.movieYear = this.movieYear
 
         // Avoid duplicate searches for the same title
-        if (this.lastSearchTitle && this.lastSearchTitle === searchTitle) {
-          console.log('SoundtrackSection: same searchTitle as last time, skipping duplicate request')
+        const key = `${params.originalTitle}||${params.englishTitle || ''}`
+        if (this.lastSearchTitle && this.lastSearchTitle === key) {
+          console.log('SoundtrackSection: same search key as last time, skipping duplicate request')
         } else {
-          this.lastSearchTitle = searchTitle
+          this.lastSearchTitle = key
           const response = await api.get(`/api/soundtrack`, { params })
 
           if (!response.data.success) {

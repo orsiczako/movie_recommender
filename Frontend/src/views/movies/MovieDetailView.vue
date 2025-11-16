@@ -97,7 +97,8 @@
       </div>
 
       <SoundtrackSection
-        :original-title="movie.original_title_en || movie.original_title || movie.title"
+        :original-title="movie.original_title || movie.title"
+        :english-title="movie.original_title_en"
         :movie-title="movie.title"
         :movie-year="getYear(movie.release_date)"
         :locale="$i18n.locale || 'en'"
