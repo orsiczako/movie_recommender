@@ -144,6 +144,8 @@ Feladatai: Frontend-backend kommunikáció biztosítása, külső API-k integrá
 **Backend:**
 A rendszerhez szükség van egy adatbázis szerverre, ebben az esetben PoostgreSQL-t használunk. A kliens oldali programokat egy Node.js alapú REST API szolgálja ki, ez csatlakozik az adatbázis szerverhez Sequelize ORM segítségével. A kliensekkel JSON objektumokkal kommunikál. A backend Express.js keretrendszert használ a HTTP kérések kezelésére és strukturált API végpontokat biztosít. A TMDB külső API integráció biztosítja a filmadatok automatikus betöltését.
 
+![Backend UML](Media/backend_uml.png)
+
 **Web Kliens:**
 A web alkalmazás Vue.js 3 keretrendszer használatával készül el, modern komponens alapú architektúrával. A REST API-hoz a felhasználó belépését követően JWT token segítségével lehet hozzáférni, ez biztosítja, hogy illetéktelen felhasználók ne módosíthassák az adatokat. A frontend reszponzív design-nal rendelkezik és Vite build eszközt használ a fejlesztéshez és telepítéshez.
 
