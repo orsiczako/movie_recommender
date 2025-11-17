@@ -142,3 +142,7 @@ A swipe mechanizmus gyors és szórakoztató módot biztosít:
 - Játékos interakció
 - Gyors felfedezés
 - Minimális kattintás szükséges
+
+## Use case:
+
+![Use case](media/use_case.png)

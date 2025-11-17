@@ -81,3 +81,9 @@ Ha az első üzenet esetén nem sikerül JSON-ként értelmezni a választ, a re
 ## Teljesítmény
 
 A Gemini Flash Lite modell gyors válaszidőt biztosít, általában két-négy másodperc alatt érkezik a válasz. A rendszer minden kérést külön küld el, nem használ cache-elést vagy streaming válaszokat.
+
+## Use case:
+
+![Use case](media/use_case.png)
+
+#

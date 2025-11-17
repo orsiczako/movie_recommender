@@ -105,3 +105,8 @@ A JWT token alapú autentikáció stateless, így CSRF támadásoknak kevésbé 
 ## Hibaüzenetek
 
 A rendszer különböző hibaüzeneteket ad vissza a felhasználónak a probléma típusától függően. Érvénytelen vagy hiányzó token esetén 401-es hibakódot ad vissza. Létező felhasználónév vagy email regisztrációkor hibaüzenetet eredményez. A frontend magyar és angol nyelvű visszajelzéseket jelenít meg a művelet eredményétől függően.
+
+## Use case:
+
+![Use case](media/use_case.png)
+

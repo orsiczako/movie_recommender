@@ -224,3 +224,6 @@ Szükséges konfiguráció:
 VITE_GEMINI_API_KEY=your_api_key
 VITE_TMDB_API_KEY=your_tmdb_key
 ```
+## Use case:
+
+![Use case](media/use_case.png)
