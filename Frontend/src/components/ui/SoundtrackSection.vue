@@ -65,30 +65,27 @@ export default {
   },
   
   props: {
-    originalTitle: {
-      type: String,
-      default: null
-    },
-    englishTitle: {
-      type: String,
-      default: null
-    },
-    movieTitle: {
-      type: String,
-      required: true
-    },
-    movieYear: {
-      type: [Number, String],
-      default: null
-    },
-    locale: {
-      type: String,
-      default: 'en'
-    },
-    autoLoad: {
-      type: Boolean,
-      default: false
-    }
+  movieTitle: {
+    type: String,
+    required: true
+  },
+  englishTitle: {  
+    type: String,
+    default: null
+  },
+  movieYear: {
+    type: [Number, String],
+    default: null
+  },
+  locale: {
+    type: String,
+    default: 'en'
+  },
+  autoLoad: {
+    type: Boolean,
+    default: false
+  }
+
   },
   
   data() {
@@ -169,63 +166,55 @@ export default {
       this.tracks = []
       this.soundtrackDescription = ''
       this.playlistUrl = null
-      
+
       try {
-        // Get soundtrack from backend Spotify API
         console.log(`Getting soundtrack for: ${this.movieTitle} (${this.movieYear})`)
-        
-        // Prefer sending the original (English) title as a query param when available
-        const rawOriginal = (this.originalTitle && this.originalTitle.trim() !== '') ? this.originalTitle : this.movieTitle
-        const rawEnglish = (this.englishTitle && this.englishTitle.trim() !== '') ? this.englishTitle : null
-        const normOriginal = this.normalizeString(rawOriginal)
-        const normEnglish = rawEnglish ? this.normalizeString(rawEnglish) : null
-        console.log('Soundtrack request - originalTitle prop:', rawOriginal, 'englishTitle prop:', rawEnglish)
-        console.log('Soundtrack request - normalized original:', normOriginal, 'normalized english:', normEnglish, 'movieYear:', this.movieYear)
 
-        const params = { originalTitle: normOriginal }
-        if (normEnglish) params.englishTitle = normEnglish
-        if (this.movieYear) params.movieYear = this.movieYear
-
-        // Avoid duplicate searches for the same title
-        const key = `${params.originalTitle}||${params.englishTitle || ''}`
-        if (this.lastSearchTitle && this.lastSearchTitle === key) {
-          console.log('SoundtrackSection: same search key as last time, skipping duplicate request')
-        } else {
-          this.lastSearchTitle = key
-          const response = await api.get(`/api/soundtrack`, { params })
-
-          if (!response.data.success) {
-            throw new Error(response.data.message || 'Failed to get soundtrack')
-          }
-
-          const soundtrackData = response.data.data
-
-          if (!soundtrackData.songs || soundtrackData.songs.length === 0) {
-            throw new Error(this.$t('soundtrack.errors.noSoundtrack'))
-          }
-
-          console.log(`Backend returned ${soundtrackData.songs.length} songs from Spotify`)
-          console.log('First song data:', soundtrackData.songs[0])
-
-          // Set description and playlist URL
-          this.soundtrackDescription = soundtrackData.description
-          this.playlistUrl = soundtrackData.playlistUrl
-
-          // Map songs to track format
-          this.tracks = soundtrackData.songs.map(song => ({
-            title: song.title,
-            artist: song.artist,
-            album: song.album,
-            year: song.year,
-            spotifyUrl: song.spotifyUrl,
-            previewUrl: song.previewUrl,
-            albumCover: song.albumCover,
-            duration: song.duration,
-            loading: false,
-            error: null
-          }))
+        // Mindig csak query paraméteres végpontot használunk!
+        const params = {
+          originalTitle: this.movieTitle,
+          movieYear: this.movieYear
         }
-        
+        if (this.englishTitle) {
+          params.englishTitle = this.englishTitle
+        } else {
+          params.englishTitle = this.movieTitle
+        }
+
+        console.log('Soundtrack request - originalTitle:', params.originalTitle, 'englishTitle:', params.englishTitle)
+
+        // CSAK query paraméteres hívás!
+        const response = await api.get('/api/soundtrack', { params })
+
+        if (!response.data.success) {
+          throw new Error(response.data.message || 'Failed to get soundtrack')
+        }
+
+        const soundtrackData = response.data.data
+
+        if (!soundtrackData.songs || soundtrackData.songs.length === 0) {
+          throw new Error(this.$t('soundtrack.errors.noSoundtrack'))
+        }
+
+        console.log(`Backend returned ${soundtrackData.songs.length} songs from Spotify`)
+        console.log('First song data:', soundtrackData.songs[0])
+
+        this.soundtrackDescription = soundtrackData.description
+        this.playlistUrl = soundtrackData.playlistUrl
+
+        this.tracks = soundtrackData.songs.map(song => ({
+          title: song.title,
+          artist: song.artist,
+          album: song.album,
+          year: song.year,
+          spotifyUrl: song.spotifyUrl,
+          previewUrl: song.previewUrl,
+          albumCover: song.albumCover,
+          duration: song.duration,
+          loading: false,
+          error: null
+        }))
+
       } catch (error) {
         console.error('Error loading soundtrack:', error)
         this.loadError = error.message

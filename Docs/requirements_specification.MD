@@ -138,4 +138,60 @@ A rendszer két típusú riportot támogat az adatok elemzésére és a felhaszn
 | **GDPR**                      | Általános adatvédelmi rendelet, amely előírja a személyes adatok biztonságos kezelését és a felhasználók jogait az adataik felett.       |
 | **Értékelés és véleményezés** | A regisztrált felhasználók által adott csillagok és rövid szöveges vélemények a filmekhez, amelyek finomítják az ajánlásokat.            |
 
----
+
+# Funkcionális specifikáció
+
+## Felhasználói szerepkörök
+
+- **Regisztrált felhasználó**: Teljes funkcionalitás, személyre szabott ajánlások, saját lista, értékelés, preferenciák beállítása.
+- **Vendég felhasználó**: Böngészés, filmek alapinformációinak megtekintése, regisztrációra ösztönzés.
+
+## Fő funkciók
+
+### 1. Regisztráció és bejelentkezés
+- Új felhasználók regisztrációja e-mail és jelszó megadásával.
+- Bejelentkezés meglévő fiókkal.
+- Jelszó visszaállítás e-mailen keresztül.
+
+### 2. Felhasználói profil és preferenciák
+- Profiladatok megtekintése és szerkesztése.
+- Filmpreferenciák (műfaj, év, nyelv, értékelés stb.) beállítása és módosítása.
+- Preferenciák mentése, betöltése, visszaállítása alapértelmezettre.
+
+### 3. Filmek böngészése és keresése
+- Filmek listázása (népszerű, új, ajánlott, műfaj szerint).
+- Részletes filmnézet: cím, év, műfaj, leírás, értékelés, poszter, soundtrack.
+- Keresés filmcím, műfaj, év, nyelv alapján.
+
+### 4. Személyre szabott ajánlások
+- Algoritmus alapú filmjavaslatok a felhasználói preferenciák és korábbi interakciók alapján.
+- Tinder-szerű swipe mechanizmus: filmek gyors elfogadása vagy elutasítása.
+
+### 5. Kedvencek és saját lista
+- Filmek hozzáadása/eltávolítása a kedvencekhez vagy saját listához.
+- Kedvencek listázása, szerkesztése, törlése.
+
+### 6. Értékelés és véleményezés
+- Filmek értékelése (pl. csillagokkal vagy pontszámmal).
+- Szöveges vélemények írása, szerkesztése, törlése.
+
+### 7. Soundtrack keresés
+- Filmekhez kapcsolódó soundtrackek keresése és megjelenítése (Spotify integráció).
+- Lejátszási listák, albumok, zeneszámok megjelenítése.
+
+### 8. AI-alapú film chat
+- AI chat funkció, ahol a felhasználó kérdezhet a filmről, karakterekről, történetről.
+- Többnyelvű támogatás (pl. magyar, angol).
+
+## Nem funkcionális követelmények
+
+- Reszponzív webes felület (mobil, tablet, asztali támogatás).
+- GDPR-kompatibilis adatkezelés.
+- Biztonságos hitelesítés és adatvédelem.
+- Gyors válaszidő, optimalizált API-hívások.
+- Dokumentált API és felhasználói útmutató.
+
+## Jogosultságok
+
+- **Vendég**: böngészés, keresés, részletes filmnézet.
+- **Regisztrált**: minden funkció elérhető.

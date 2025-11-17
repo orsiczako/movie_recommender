@@ -126,7 +126,6 @@ class PreferencesController {
 
       if (!existingPreferences) {
         // Ha nincs preferences, hozzunk létre újat a beállított értékekkel
-        console.log('🆕 Creating new preferences for user:', userId);
         const newPreferencesData = {
           user_id: userId,
           ...updateData.data

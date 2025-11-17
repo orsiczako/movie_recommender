@@ -439,6 +439,9 @@ class InteractionController {
     return ApiResponse.serverError(res, error);
   }
 }
+
+  //EZ A FÜGGVÉNY NEM KELL, EZT CSAK TERVEZTEM HASZNÁLNI
+
   /**
    * Calculate user interaction statistics including like/dislike ratios
    * Provides total counts, recent activity (last 7 days), and like percentage

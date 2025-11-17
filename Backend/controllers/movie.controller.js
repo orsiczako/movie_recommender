@@ -968,6 +968,7 @@ class MovieController {
         return ApiResponse.error(res, 'Movie ID is required', 400);
       }
 
+
       const params = {
         api_key: this.tmdbApiKey,
         language: language,
@@ -979,40 +980,53 @@ class MovieController {
       });
 
       if (response.data) {
-        // Use the converter for base properties, but get genres directly from the detailed response.
         const movieData = this.convertTmdbToFormat(response.data);
-        
-        // *** FIX: Overwrite the genres from the converter with the correct, full genre objects from the API response. ***
         movieData.genres = response.data.genres;
-
-        // Ensure original_title is returned (TMDB provides this field and it's needed by frontend)
         movieData.original_title = response.data.original_title || movieData.title;
 
-        // ALSO: fetch English details to ensure we have the true original (English) title
+        // Helper to check for Latin characters
+        const hasLatin = str => /[A-Za-z]/.test(str);
+
+        // Try to fetch English title, but only use if it contains Latin characters
         try {
           if ((language || 'en') !== 'en') {
             const enResp = await axios.get(`${this.tmdbBaseUrl}/movie/${movieId}`, {
               params: { api_key: this.tmdbApiKey, language: 'en' }
             });
             if (enResp.data) {
-              // Use the English localized `title` when available (TMDB returns localized `title`),
-              // fall back to `original_title` if `title` is not informative.
-              movieData.original_title_en = enResp.data.title || enResp.data.original_title || movieData.original_title;
+              let candidate = enResp.data.title || enResp.data.original_title || movieData.original_title;
+              if (candidate && hasLatin(candidate)) {
+                movieData.original_title_en = candidate;
+              } else {
+                // Fallback: try the current (localized) title if it has Latin
+                if (hasLatin(movieData.title)) {
+                  movieData.original_title_en = movieData.title;
+                } else {
+                  movieData.original_title_en = '';
+                }
+              }
               console.log(`Fetched English title for ${movieId}:`, movieData.original_title_en);
             }
           } else {
-            movieData.original_title_en = movieData.original_title;
+            // Already English, so use the title if it has Latin
+            if (hasLatin(movieData.title)) {
+              movieData.original_title_en = movieData.title;
+            } else {
+              movieData.original_title_en = '';
+            }
           }
         } catch (err) {
           console.warn('Failed to fetch English original_title:', err.message);
-          movieData.original_title_en = movieData.original_title;
+          if (hasLatin(movieData.title)) {
+            movieData.original_title_en = movieData.title;
+          } else {
+            movieData.original_title_en = '';
+          }
         }
 
-        // Add additional details
         movieData.credits = response.data.credits;
         movieData.videos = response.data.videos?.results || [];
         movieData.images = response.data.images;
-        
         return ApiResponse.success(res, 'Movie details retrieved successfully', movieData);
       }
       

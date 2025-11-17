@@ -96,10 +96,9 @@
         <p>{{ movie.overview }}</p>
       </div>
 
-      <SoundtrackSection
-        :original-title="movie.original_title || movie.title"
-        :english-title="movie.original_title_en"
-        :movie-title="movie.title"
+      <SoundtrackSection 
+        :movie-title="movie.original_title || movie.title"
+        :english-title="movie.original_title_en || movie.title"
         :movie-year="getYear(movie.release_date)"
         :locale="$i18n.locale || 'en'"
         :auto-load="true"
@@ -109,6 +108,7 @@
     <MovieChatWidget
       v-if="movie"
       :movie-title="movie.original_title || movie.title"
+      :movie-title-localized="movie.title"
       :movie-year="getYear(movie.release_date)"
       :movie-overview="movie.overview"
     />

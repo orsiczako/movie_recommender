@@ -74,6 +74,10 @@ export default {
       type: String,
       required: true
     },
+    movieTitleLocalized: {
+      type: String,
+      default: ''
+    },
     movieYear: {
       type: [String, Number],
       default: null
@@ -100,6 +104,7 @@ export default {
       try {
         const response = await api.post('/api/chat/movie', {
           movieTitle: props.movieTitle,
+          movieTitleLocalized: props.movieTitleLocalized,
           movieYear: props.movieYear,
           movieOverview: props.movieOverview,
           question: 'Hello!',
@@ -146,6 +151,7 @@ export default {
           try {
             const response = await api.post('/api/chat/movie', {
               movieTitle: props.movieTitle,
+              movieTitleLocalized: props.movieTitleLocalized,
               movieYear: props.movieYear,
               movieOverview: props.movieOverview,
               question: 'Hello!',
@@ -196,6 +202,7 @@ export default {
       try {
         const response = await api.post('/api/chat/movie', {
           movieTitle: props.movieTitle,
+          movieTitleLocalized: props.movieTitleLocalized,
           movieYear: props.movieYear,
           movieOverview: props.movieOverview,
           question: userMessage,

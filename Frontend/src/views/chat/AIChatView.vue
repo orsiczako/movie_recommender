@@ -136,11 +136,11 @@ export default {
         isUser: true,
         timestamp: new Date()
       }
-      
       this.messages.push(userMessage)
+      this.saveMessagesToSession()
       const messageText = this.currentMessage.trim()
       this.currentMessage = ''
-      
+
       // Scroll to bottom
       this.$nextTick(() => {
         this.scrollToBottom()
@@ -153,7 +153,7 @@ export default {
         // Call real AI API
         const aiResponse = await this.callAIAPI(messageText)
         this.isTyping = false
-        
+
         const aiMessage = {
           id: this.nextMessageId++,
           text: typeof aiResponse === 'string' ? aiResponse : aiResponse.text,
@@ -161,15 +161,45 @@ export default {
           isUser: false,
           timestamp: new Date()
         }
-        
         this.messages.push(aiMessage)
-        
+        this.saveMessagesToSession()
+
         this.$nextTick(() => {
           this.scrollToBottom()
         })
       } catch (error) {
         this.isTyping = false
         console.error('Error calling AI API:', error)
+      }
+    },
+
+    saveMessagesToSession() {
+      // Mentés sessionStorage-be (id, text, isUser, timestamp, movieRecommendations)
+      const toSave = this.messages.map(m => ({
+        id: m.id,
+        text: m.text,
+        isUser: m.isUser,
+        timestamp: m.timestamp instanceof Date ? m.timestamp.toISOString() : m.timestamp,
+        movieRecommendations: m.movieRecommendations || null
+      }))
+      sessionStorage.setItem('aiChatMessages', JSON.stringify(toSave))
+    },
+
+    loadMessagesFromSession() {
+      const raw = sessionStorage.getItem('aiChatMessages')
+      if (raw) {
+        try {
+          const arr = JSON.parse(raw)
+          if (Array.isArray(arr) && arr.length > 0) {
+            this.messages = arr.map(m => ({
+              ...m,
+              timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
+            }))
+            this.nextMessageId = Math.max(...this.messages.map(m => m.id)) + 1
+          }
+        } catch (e) {
+          // ignore parse errors
+        }
       }
     },
 
@@ -255,11 +285,22 @@ export default {
   },
 
   mounted() {
-    // Replace welcome message with localized version
-    if (this.messages.length > 0) {
+    // Load from sessionStorage if available
+    this.loadMessagesFromSession()
+    // Replace welcome message with localized version if üres vagy csak 1 elem van
+    if (this.messages.length === 0) {
+      this.messages = [{
+        id: 1,
+        text: this.$t('ai_chat.welcome_message'),
+        isUser: false,
+        timestamp: new Date()
+      }]
+      this.nextMessageId = 2
+      this.saveMessagesToSession()
+    } else if (this.messages.length === 1) {
       this.messages[0].text = this.$t('ai_chat.welcome_message')
+      this.saveMessagesToSession()
     }
-    
     // Auto scroll to bottom
     this.$nextTick(() => {
       this.scrollToBottom()
