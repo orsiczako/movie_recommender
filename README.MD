@@ -1,5 +1,19 @@
 # Movie Recommendation System
 
+## Dokumentációk helye
+
+A részletes dokumentációk, specifikációk, jegyzőkönyvek és funkcióleírások a projekt gyökerében található `Docs/` mappában érhetők el. Néhány fontosabb dokumentum:
+
+- Funkcionális specifikáció: `Docs/funcional_specification.md`
+- Rendszerterv: `Docs/rendszerterv.md`
+- Követelmény specifikáció: `Docs/requirements_specification.MD`
+- Felhasználói történetek: `Docs/User_Stories/`
+- Jegyzőkönyvek: `Docs/Jegyzokonyvek/`
+- Sprint dokumentumok: `Docs/Sprints/`
+- Főbb funkciók leírásai: `Docs/Features/`
+
+További részletekért és médiaanyagokért lásd a megfelelő almappákat a `Docs/` könyvtáron belül.
+
 A modern web application for movie recommendations with user preferences and personalized browsing experience.
 
 ## Overview
