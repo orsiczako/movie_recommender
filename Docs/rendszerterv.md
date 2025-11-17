@@ -237,3 +237,55 @@ Az alkalmazás folyamatos üzemeltetése és karbantartása, mely magában fogla
 - Új filmadatok szinkronizálása
 - Felhasználói visszajelzések alapján fejlesztések
 
+## 14. Definition of Done
+
+A fejlesztési folyamat során egy feladat akkor tekinthető befejezettnek (Done), ha az alábbi kritériumoknak megfelel:
+
+**Kód minőség:**
+- A kód megfelel a projekt kódolási standardjainak és konvencióknak
+- A kód tiszta, olvasható, dokumentált és követi a DRY (Don't Repeat Yourself) elvet
+- Nincs kiszűrhető kódismétlés vagy felesleges komplexitás
+- A komponensek és modulok megfelelően szeparáltak és újrafelhasználhatók
+
+**Funkcionalitás:**
+- A feature pontosan megvalósítja a követelményspecifikációban és user story-ban megfogalmazott funkcionalitást
+- Az összes acceptance kritérium teljesül
+- A feature működik az összes támogatott böngészőben (Chrome, Firefox, Safari, Edge)
+- Reszponzív design működik asztali és mobil nézetben egyaránt
+
+**Tesztelés:**
+- Unit tesztek készültek és sikeresen lefutnak (minimum 70% kódlefedettség)
+- Integrációs tesztek elkészültek a backend-frontend kommunikációra
+- Manuális tesztelés megtörtént különböző böngészőkben és eszközökön
+- Nincsenek ismert kritikus vagy magas prioritású hibák
+
+**Kód review:**
+- A kód átnézésre került legalább egy másik csapattag által
+- A review során felmerült észrevételek kijavításra kerültek
+- A változások jóváhagyásra kerültek a megfelelő csapattagok által
+
+**Dokumentáció:**
+- API végpontok dokumentálva vannak (ha releváns)
+- Összetett logika kommentekkel ellátva
+- README és egyéb dokumentációk frissítve lettek az új funkcionalitással
+- User story és task státusza frissítve lett a projekt menedzsment eszközben
+
+**Verziókezelés:**
+- A kód be van commitolva a verziókezelő rendszerbe értelmes commit üzenetekkel
+- A branch merge-elve lett a megfelelő ágba (dev/master)
+- Merge conflict-ok feloldásra kerültek
+
+**Teljesítmény és biztonság:**
+- Az új funkció nem rontja jelentősen a rendszer teljesítményét
+- Biztonsági szempontok figyelembe lettek véve (authentikáció, autorizáció, input validáció)
+- Nincs érzékeny adat (jelszó, token, API kulcs) a kódban hardcode-olva
+
+**Deployment:**
+- A feature sikeresen telepíthető a development és staging környezetbe
+- A deployment folyamat során nem merültek fel kritikus hibák
+- Az új funkció nem befolyásolja negatívan a meglévő funkcionalitást
+
+**Product Owner elfogadás:**
+- A Product Owner áttekintette és elfogadta a funkciót
+- Az elkészült feature megfelel az üzleti elvárásoknak és a felhasználói igényeknek
+
