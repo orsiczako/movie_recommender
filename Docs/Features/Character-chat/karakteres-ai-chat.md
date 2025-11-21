@@ -85,5 +85,3 @@ A Gemini Flash Lite modell gyors válaszidőt biztosít, általában két-négy 
 ## Use case:
 
 ![Use case](media/use_case.png)
-
-#

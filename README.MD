@@ -104,4 +104,3 @@ The application follows modern web development practices with:
 ## License
 
 Educational project developed for learning purposes.
-

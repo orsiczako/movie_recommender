@@ -1,5 +1,13 @@
 {
   "devDependencies": {
-    "@cucumber/cucumber": "^12.2.0"
+    "@cucumber/cucumber": "^12.2.0",
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-vue": "^10.5.1",
+    "globals": "^16.5.0"
+  }
+  ,
+  "scripts": {
+    "lint:report": "eslint Backend --format html --output-file lint-reports/backend-report.html"
   }
 }
